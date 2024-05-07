@@ -1,4 +1,4 @@
-# Skriver cannonical band
+#  cannonical band calculation
 
 #Input files (will add)
 
