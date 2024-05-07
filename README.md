@@ -1,15 +1,19 @@
 # Skriver cannonical band
 
+#Input files (will add)
+
 ## Structure Constants 
 
 There are currently three files:
 
 
-gaunt:
+###gaunt:
 
-spherical:
+###spherical:
 
-factorial:
+describe spherical harmonic function
+
+###factorial:
 
 At the moment, this code is in fortran 77. To run,
 
@@ -22,3 +26,5 @@ gfortran -lgfortran -o factorial factorial.F
 ```
 
 ## LMTO
+
+## Cannonical bands 
