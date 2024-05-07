@@ -28,11 +28,11 @@ The factorials for the gaunt coefficients are done in sfact2_f and factir_f
 
 
 
-###spherical:
+### spherical:
 
 describe spherical harmonic function
 
-###factorial:
+### factorial:
 
 At the moment, this code is in fortran 77. To run,
 
