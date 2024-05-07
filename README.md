@@ -1,6 +1,9 @@
 # Skriver cannonical band
 
+## Structure Constants 
+
 There are currently three files:
+
 
 gaunt:
 
@@ -18,3 +21,4 @@ gfortran -lgfortran -o factorial factorial.F
 ./factorial
 ```
 
+## LMTO
