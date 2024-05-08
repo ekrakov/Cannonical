@@ -281,7 +281,7 @@ C
       DKM=DMAX1(DK(1),DK(2),DK(3))
       DDM=TWOPI/DDM
       DKM=TWOPI/DKM
-      NUMR=2*(IFIX(RA/DDM)+1)+1
+      NUMR=2*(IFIX(RA/DKM)+1)+1
       NUMG=2*(IFIX(GA/DDM)+1)+1
       NUMRH=NUMR/2+1
       NUMGH=NUMG/2+1
@@ -377,9 +377,211 @@ C
 C
 C SORT VECTORS IN ORDER OF INCREASING D
 C
-   
+  
+      DA=1.E-06
+      NSH=0
+      NSHL=-1
+      DO 28 K=1,NG
+      AMIN=1000.
+      DO 29 N=1,NG
+      IF (D(N)-AMIN) 30, 29, 29 
+   30 AMIN=D(N)
+      N1=N
+   29 CONTINUE
+      NSHL=NSHL+1
+      AKX(K)=CSX(N1)
+      AKY(K)=CSY(N1)
+      AKZ(K)=CSZ(N1)
+      DB=D(N1)
+      IF (DB.GT.DA+1.D-07) GO TO 31
+      WRITE(6,2) K, AKX(K), AKY(K), AKZ(K), DB
+      GO TO 28
+   31 NSH=NSH+1
+      WRITE(6,1) NSH, NSHL
+      WRITE(6,2) K, AKX(K), AKY(K), AKZ(K), DB
+      NSG(NSH)=NSHL
+      NSHL=0
+      DA=DB
+   28 D(N1)=1000.
+      NSH=NSH+1
+      NSHL=NSHL+1
+      NSG(NSH)=NSHL
+      WRITE(6,1) NSH, NSHL
+      NUMVG=NG
+      NSHLG=NSH
+C
+C       STORE VECTORS ON FILE 1
+C      
+
+      WRITE(1) BKX,BKY,BKZ,VOL,RMAX,GMAX,NR,NG,NRO
+      WRITE(1)(ASX(N),N=1,NR)
+      WRITE(1)(ASY(N),N=1,NR)
+      WRITE(1)(ASZ(N),N=1,NR)
+      WRITE(1)(DR(N), N=1,NR)
+      WRITE(1)(AKX(N),N=1,NG)
+      WRITE(1)(AKY(N),N=1,NG)
+      WRITE(1)(AKZ(N),N=1,NG)
+      RETURN
+   32 continue
+
+c     READ VECTORS GENERATED IN AN EARLIER RUN
+      READ(1) BKX,BKY,BKZ,VOL,RMAX,GMAX,NUMVR,NUMVG,NRO
+      READ(1)(ASX(N),N=1,NUMVR)
+      READ(1)(ASY(N),N=1,NUMVR)
+      READ(1)(ASZ(N),N=1,NUMVR)
+      READ(1)(DR(N),N=1,NUMVR)
+      READ(1)(AKX(N),N=1,NUMVG)
+      READ(1)(AKY(N),N=1,NUMVG)
+      READ(1)(AKZ(N),N=1,NUMVG)
+      WRITE(6,8) RMAX,NUMVR,GMAX,NUMVG
+      RETURN
+   33 WRITE(6,9) NR,DX,RA,RMAX
+      STOP
+   34 WRITE(6,10)NG,DX,GA,GMAX
+      STOP
+      END
+
+
+      SUBROUTINE SMTRX(PKXP,PKYP,PKZP)
+C**********************************************************************
+C     
+C CALCULATION OF THE STRUCTURE CONSTANT MATRIX
+C
+C **********************************************************************
+      IMPLICIT REAL*8 (A-H, O-Z)
+      COMPLEX*16 SUMR, SUMG, SR, CIM, CCIM,CIL,DCMPLX,YLM,CDEXP,CXPRDK,
+     1SRC
+      REAL*8 DREAL, DIMAG
+      COMMON /B1/ CIM, CCIM, C(256), FAC(13), DAC(13), NGLN(10),
+     1ALAMDA, TWOPI, FPL30M, SWS,VOL,SOO,SWSL,FPLAM RMAX,GMAX,ICNVRG,
+     2NUMVR, NUMVG, NQ, NR0, NL2, NL2P, KLM0, NL, NLM, LMQ, NOWRT, IDIM
+      COMMON /B2/ SRKLP(2916), SIKLP(2916)
+      COMMON /LDATA/LL(49), MM(49)
+      COMMON /VEC/BSX(3),BSY(3),BSZ(3),BKX(3),BKY(3),BKZ(3),QX(6),QY(6),
+     1QZ(6), ASX(500), ASY(500), ASZ(500), AKX(500), AKY(300), AKZ(300),
+     2DR(500),DS(300),
+     3USX(500),USY(500),USZ(500),UKX(300),UKY(300),UKZ(300)
+      COMMON/YLMD/YLM(49)
+      DIMENSION GLNS(500,1),FBLN(500,7),BDOTQ(500),DRQ(500),
+     1SR(49), CXPRDK(500), SUMR(49), SUMG(49)
+  100 FORMAT(1H ,9(1PE13.5))
+  101 FORMAT(1H ,///)
+  102 FORMAT(1H0,10X,'QQ DIAGONAL BLOCK',/)
+  103 FORMAT(1H0,10X,1PE11.3)
+  104 FORMAT(1H0,10X,'QP Q OFF DIAGONAL BLOCK ', 'QP, Q =',2I5,/)
+  105 FORMAT(1H0,25X,'CONVERGENCE TEST')
+  106 FORMAT(1H0,'RECIPROCAL SPACE SUMS',/)
+  107 FORMAT(1H0,'REAL SPACE SUMS',/)
+
+C     QQ DIAGONAL BLOCKS
+      
+
+      PKX=PKXP
+      PKY=PKYP
+      PKZ=PKZP
+      CXPRDK(1)=DCHPLX(1.D00,0.D00)
+      DO 22 I=2,NRO
+      DRI=DR(I)
+      USX(I)=ASX(I)/DRI
+      USY(I)=ASY(I)/DRI
+      USZ(I)=ASZ(I)/DRI
+      PDR=PKX*ASX(I)+PKY*ASY(I)+PKZ*ASZ(I)
+      CXPRDK(I)=CDEXP(PDR*CIM)
+      ALFA=ALAMDA*DRI
+C    CONVERGENCE FUNCTION, REAL SPACE
+
+      DO 25 LP=1, NL2P
+      L=LP-1
+      NG=NGLN(LP)
+   25 GLNS(I,LP)=GLN(ALFA,L,NG)
+   22 CONTINUE
+      DO 35 I=l,NUMVG
+      X=AKX(I)+PKX
+      Y=AKY(I)+PKY
+      Z=AKZ(I)+PKZ
+      D=DSQRT(X*X+Y*Y+Z*Z)
+      IF(D.GT.GMAX) GO TO 35
+      BETA=D/ALAMDA
+      UKX(I)=X/D
+      UKY(I)=Y/D
+      UKZ(I)=Z/D
+
+c     CONVERGENCE FUNCTION, RECIP. SPACE
+
+      DO 33 LP=1,NL2P
+      L=LP-1
+      NG=NGLN(LP)
+   33 FBLN(I,LP)=BETA*(L-2)/(1.D00+BETA*BETA)**(NG+1)
+   35 DG(I)=D
+
+c     EVALUATION OF LATTICE SUMS FOR QPP .EQ. 0
+
+      DO 44 KLM=1,KLMO
+      SUMR(KLM)=DCMPLX(0.D00,0.D00)
+   44 SUMG(KLM)=DCMPLX(0.D00,0.D00)
+
+c     real space
+
+      DO 49 I=2,NRO
+      CALL YLMRK(USX(I),USY(I),USZ(I),NL2)
+      KLM=0
+      DO 26 LP=1,NL2P
+      L=LP-1
+      NM=L*2+1
+      DO 26 M=1,NM
+      KLM=KLM+1
+   26 SUMR(KLM)=SUMR(KLM)+GLNS(I,LP)*YLM(KLM)*CXPRDK(I)   
+      IF(NL2.LE.5) GO TO 49
+      
+c     IF L IS LARGER THAN 4, REAL SPACE SUMMATIONS ONLY
+
+      DO 50 LP=6,NL2
+      NM=LP*2-1
+      SORO=(SWS/DR(I))**LP
+      DO 50 M=1,NM
+      KLM=KLM+1
+   50 SUMR(KLM)=SUMR(KLM)+SORO*YLM(KLM)*CXPRDK(I)
+   49 CONTINUE
+
+c     recip space
 
 
 
+      DO 34 I=1,NUMVG
+      IF(DG(I).GT.GMAX) GO TO 34
+      CALL YLMRK(UKX(I),UKY(I),UKZ(I),NL2P)
+      KLM=0
+      DO 28 LP=1,NL2P
+      L=LP-1
+      NM=L*2+1
+      DO 28 M=1,NP
+      KLM=KLM+2
+   28 SUMG(KLM)=SUMG(KLM)+FBLN(I,LP)*YLM(KLM)
+   34 CONTINUE 
+
+C     SET UP STRUCTURE CONSTANT MATRIX FROM LATTICE SUMS
+
+      CIL=CIM
+      KLM=0
+      DO 51 LP=1,NL2
+      L=LP-1
+      NM=L*2+1
+      CIL=CIL*CCIM
+      IF(LP.GT.5) GO TO 52
+      AR=SWLS**LP
+      AG=FPL3OM*AR/DAC(LP)
+      DO 45 M=1,NM
+      KLM=KLM+1
+   45 SR(KLM)=AR*SUMR(KLM)*CIL+AG*SUMG(KLM)
+      GO TO 51
+   52 DO 53 M=1,NM
+      KLM=KLM+1
+   53 SR(KLM)=SUMR(KLM)*CIL
+   51 CONTINUE  
+      SR(1)=SR(1)-SOO*SWSL
+
+C     INSERT INTO LOWER TRIANGLE
+
+      C 140 BELOW LOWER TRI
       
 c     end program
