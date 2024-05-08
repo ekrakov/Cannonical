@@ -36,7 +36,15 @@ Structure Constants for BCC Lattice
 
 ### factorial calculation
     Currently having an issue with this!
+
     
+```bash
+gfortran -lgfortran -o factorial factorial.F
+```
+    
+```bash
+./factorial
+```
 ### cross product
     working test script 
 
@@ -46,41 +54,13 @@ Structure Constants for BCC Lattice
 
 There are currently three files:
 
-
-Input
-RMAX, GMAX (FIRST LINE) radii for k and q respectively (Rest zeros). 
-Third line
-Nl = 1-l max  (so NL=3 includes s,p, and d electrons)
-nq is the number of atoms per primitive cell
-NGLN?
-ALAMDA? (DETERMINED WITH TEST RUNS WITH ICNVRG=1)
-FOURTH LINE
-
-LAT (SELECTS BZ TO BE USED IN CALCULATION ACCORDING TO TABLE IN SUBROUTINE MESH)
-BOA B/A 
-COA C/A
-
-.....
-TRANSLATIONAL VECTORS SPANNING UNIT CELL
-
-
-
-
 ### spherical:
 
 describe spherical harmonic function
 
-### factorial:
 
-At the moment, this code is in fortran 77. To run,
 
-```bash
-gfortran -lgfortran -o factorial factorial.F
-```
 
-```bash
-./factorial
-```
 
 ## LMTO
 
