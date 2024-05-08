@@ -205,4 +205,99 @@ C **********************************************************************
       DIMENSION CSX(500),CSY(500),CSZ(500),D(500),DD(3),DK(3)
       INTEGER NSR(50),NSG(50)
 
+    1 FORMAT(1H,//, 15X,'SHELL NUMBER',I5,' WITH',I5,' POINTS',//)
+    2 FORMAT(1H 10X,I5,4F10.6)
+    3 FORMAT(1H ,10X,'(',F10.5,',',F10.5,',',F10.5,')',/)
+    4 FORMAT(1H1 ,14X,'RESULT FROM VECGEN FOR REAL SPACE VECTORS',//,
+     114X,'NO',5X,'SX',8X,'SY',8X,'SZ',8X,'D',/)
+    5 FORMAT(1H ,10X,'RESULT FROM VECGEN FOR RECIPROCAL SPACE VECTORS',
+     1 //,'NO',5X,'KX',8X,'KY',8X,'KZ',8X,'D',/)
+    6 FORMAT(1H,//,11X,'PRIMITIVE VECTORS OF RECIPROCAL SPACE',/)
+    7 FORMAT(1H,//,11X,'R1',F10.4,'RA',F10.4,/,11X,'G1',F10.4,
+     1' GA',F10.4,/) 
+    8 FORMAT(1H ,'//',11X,'VALUES GENERATED AT PREVIOUS RUN OF VECGEN , (R
+     1IMAX,NUMVR,GMAX,NUMVG) =',//,11X,F10.5,I5,5X,F10.5,I5,//)
+    9 FORMAT(1H ,'*** NR EXCEEDS DIMENSIONS OF ASX, ASY, ASZ',I5,3F10.4)
+   10 FORMAT(1H ,'*** NG EXCEEDS DIMENSIONS OF AKX, AKY, AKZ',I5,3F10.4)
+   11 FORMAT(1H ,10X,'NUMR',I4,' NUMG',I4,//)
+
+
+     
+      IF (NOVCGN.EQ.0) GO TO 32
+      WRITE(6,6)
+      
+C      PRIMITIVE VECTORS (BKX, BKY, BKZ) OF RECIPROCAL SPACE
+      
+      DO 20 I=1,3
+      I1=1+MOD(I,3)
+      I2=1+MOD(I,3)
+      CALL CROSS(BSX(I1),BSY(I1),BSZ(I1),BSX(I2),BSY(I2),BSZ(I2),
+     1BKX(I),BKY(I),BKZ(I))
+      VOL=DABS(BSX(1)*BKY(1)+BSY(1)*BKZ(1))
+   20 CONTINUE
+      
+      DO 21 I=1,3
+      BKX(I)=BKX(I)*VOL*TWOPI
+      BKY(I)=BKY(I)*VOL*TWOPI
+      BKZ(I)=BKZ(I)*VOL*TWOPI
+   21 WRITE(6,3) BKX(I),BKY(I),BKZ(I)
+
+C
+C CALCULATE RADII RA, GA OF SPHERES HOLDING ALL VECTORS USED IN LAT-
+C TICE SUMS. R1 IS LONGEST BASIS VECTOR. G1 IS LONGEST VECTOR IN
+C BRILLOUIN ZONE. MUST BE RECONSIDERED IN ANY NEW APPLICATIONS
+C
+      R1 = 1.E-06
+      DO 35 IQ=1,NQ
+      PQX = QX(IQ)
+      PQY = QY(IQ)
+      PQZ = QZ(IQ)
+      DO 35 JQ=1,NQ
+      X = PQX - QX(JQ)
+      Y = PQY - QY(JQ)
+      Z = PQZ - QZ(JQ)
+      DQ = DSQRT(X*X + Y*Y + Z*Z)
+      IF (DQ .LT. R1) GO TO 35
+      R1 = DQ
+   35 CONTINUE
+      R1 = R1 * 1.001
+      RA = RMAX + R1
+      B1 = BKX(1) + BKX(2) + BKX(3)
+      B2 = BKY(1) + BKY(2) + BKY(3)
+      B3 = BKZ(1) + BKZ(2) + BKZ(3)
+      G1 = DSQRT(B1*B1 + B2*B2 + B3*B3) / 2.D00
+      GA = GMAX + G1
+      IF (LAT.EQ.3) GA = GMAX + 6.2832
+      IF (LAT.EQ.8) GA = GMAX + 6.52
+      IF (LAT.EQ.6) GA = GMAX + DSQRT(0.5 + (1./COA)**2) * 6.29
+      WRITE(6,7) R1, RA, G1, GA
+
+
+      
+      DO 36 I=1,3
+      DD(I)=DSQRT(BSX(I)**2+BSY(I)**2+BSZ(I)**2)
+   36 DK(I)=DSQRT(BKX(I)**2+BKY(I)**2+BKZ(I)**2)
+      DDM=DMAX1(DD(1),DD(2),DD(3))
+      DKM=DMAX1(DK(1),DK(2),DK(3))
+      DDM=TWOPI/DDM
+      DKM=TWOPI/DKM
+      NUMR=2*(IFIX(RA/DDM)+1)+1
+      NUMG=2*(IFIX(GA/DDM)+1)+1
+      NUMRH=NUMR/2+1
+      NUMGH=NUMG/2+1
+      WRITE(6,11) NUMR, NUMG
+C
+C REAL SPACE
+C
+      WRITE(6,4)
+      NR=0
+      NRO=0
+      DO 22 L=1,NUMR
+   
+
+
+
+
+
+      
 c     end program
