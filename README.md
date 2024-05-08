@@ -28,14 +28,15 @@ Structure Constants for BCC Lattice
     
 
 ### Transformation from symmetry to rectangular cords
-    unsure what this is doing 
+
+unsure what this is doing 
 
 ### alpha calculation???
 
 ### convergence functions
 
 ### factorial calculation
-    Currently having an issue with this!
+Currently having an issue with this!
 
     
 ```bash
@@ -46,7 +47,7 @@ gfortran -lgfortran -o factorial factorial.F
 ./factorial
 ```
 ### cross product
-    working test script 
+working test script 
 
 ### generate vectors of direct and real space
 
