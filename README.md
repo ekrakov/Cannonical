@@ -1,29 +1,67 @@
 #  cannonical band calculation
 
+
+
+example input
+
+```
+Structure Constants for BCC Lattice
+2.5 3       17.8       1          0
+3   1       3445555555 1          0
+3   1.0     7.
+0.5 0.5     0.5        -0.5       0.5
+-0.5 0.5    -0.5       0.5        0.5
+0   0       0          0          0.
+0   0       17         0          0 ```
+
+
+
+
+
+
+
 #Input files (will add)
 
-## Structure Constants 
+## Structure Constant calculation
+
+### construction of k-mesh in k space
+    
+
+### Transformation from symmetry to rectangular cords
+    unsure what this is doing 
+
+### alpha calculation???
+
+### convergence functions
+
+### factorial calculation
+    Currently having an issue with this!
+    
+### cross product
+    working test script 
+
+### generate vectors of direct and real space
+
+### final calculation of structure constant matrix 
 
 There are currently three files:
 
 
-### gaunt:
+Input
+RMAX, GMAX (FIRST LINE) radii for k and q respectively (Rest zeros). 
+Third line
+Nl = 1-l max  (so NL=3 includes s,p, and d electrons)
+nq is the number of atoms per primitive cell
+NGLN?
+ALAMDA? (DETERMINED WITH TEST RUNS WITH ICNVRG=1)
+FOURTH LINE
 
-comparison with rspt. 
-```mermaid
-flowchart LR
-    A[DRSPt] -->|make tail energies| B(sentels sentels.F)
-    B --> C{functions}
-    C -->|One| D[sbf4 besselfunction.c ]
-    C -->|Two| E[hankel functions]
-```
+LAT (SELECTS BZ TO BE USED IN CALCULATION ACCORDING TO TABLE IN SUBROUTINE MESH)
+BOA B/A 
+COA C/A
 
-Gaunt coefficients 
-Gaunt coefficients are initialized in DRSPt.F
-It calls a function: init_cgaunt which is in cgaunt.F
-
-The actual calculations for the gaunt coefficients are done in sgaunt.F
-The factorials for the gaunt coefficients are done in sfact2_f and factir_f
+.....
+TRANSLATIONAL VECTORS SPANNING UNIT CELL
 
 
 
