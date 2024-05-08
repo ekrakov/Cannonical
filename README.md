@@ -6,10 +6,10 @@ example input
 
 ```
 Structure Constants for BCC Lattice
-2.5 3       17.8       1          0
-3   1       3445555555 1          0
-3   1.0     7.
-0.5 0.5     0.5        -0.5       0.5
+2.5 3       17.8       1          0    # RMAX GMAX
+3   1       3445555555 1          0    # NL NQ NGLN ALAMDA 
+3   1.0     7.                         # LAT BOA COA 
+0.5 0.5     0.5        -0.5       0.5  # TRANSLATION VECTORS SPANNING CELLS 
 -0.5 0.5    -0.5       0.5        0.5
 0   0       0          0          0.
 0   0       17         0          0
