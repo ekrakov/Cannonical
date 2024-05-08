@@ -295,7 +295,89 @@ C
       DO 22 L=1,NUMR
    
 
+      A=L-NUMRH
+      DO 22 M=1,NUMR
+      B=M-NUMRH
+      DO 22 N=1,NUMR
+      C=N-NUMRH
+      SX=A*BSX(1)+B*BSX(2)+C*BSX(3)
+      SY=A*BSY(1)+B*BSY(2)+C*BSY(3)
+      SZ=A*BSZ(1)+B*BSZ(2)+C*BSZ(3)
+      DX=DSQRT(SX*SX+SY*SY+SZ*SZ)
+      IF (DX.GT.RA) GO TO 22
+      IF (DX.LE.RMAX) NRO=NRO+1
+      NR=NR+1
+      IF (NR.GT.500) GO TO 33
+      D(NR)=DX
+      CSX(NR)=SX
+      CSY(NR)=SY
+      CSZ(NR)=SZ
+   22 CONTINUE
+C
+C SORT VECTORS IN ORDER OF INCREASING D
+C
 
+      DA=1.D-06
+      NSH=0
+      NSHL=-1
+      DO 23 K=1,NR
+      AMIN=1000.
+      DO 24 N=1,NR
+      IF (D(N)-AMIN) 25, 24, 24
+   25 AMIN=D(N)
+      N1=N
+   24 CONTINUE
+      NSHL=NSHL+1
+      ASX(K)=CSX(N1)
+      ASY(K)=CSY(N1)
+      ASZ(K)=CSZ(N1)
+      DB=D(N1)
+      DR(K)=DB
+      IF (DB .GT. DA+1.D-06) GO TO 26
+      WRITE(6,2)K, ASX(K), ASY(K), ASZ(K), DB
+      GO TO 23
+   26 NSH=NSH+1
+      WRITE(6,1) NSH, NSHL
+      NSR(NSH)=NSHL
+      WRITE(6,2)K, ASX(K), ASY(K), ASZ(K), DB
+      NSHL=0
+      DA=DB
+   23 D(N1)=1000.
+      NSH=NSH+1
+      NSHL=NSHL+1
+      NSR(NSH)=NSHL
+      WRITE(6,1) NSH, NSHL
+      NUMVR=NR
+      NSHLR=NSH
+ 
+c      
+C RECIPROCAL SPACE
+C
+
+      WRITE(6,5)
+      NG=0
+      DO 27 L=1,NUMG
+      A=L-NUMGH
+      DO 27 M=1,NUMG
+      B=M-NUMGH
+      DO 27 N=1,NUMG
+      C=N-NUMGH
+      GX=A*BKX(1)+B*BKX(2)+C*BKX(3)
+      GY=A*BKY(1)+B*BKY(2)+C*BKY(3)
+      GZ=A*BKZ(1)+B*BKZ(2)+C*BKZ(3)
+      DX=DSQRT(GX*GX+GY*GY+GZ*GZ)
+      IF (DX .GT. GA) GO TO 27
+      NG=NG+1
+      IF (NG .GT. 300) GO TO 34
+      D(NG)=DX
+      CSX(NG)=GX
+      CSY(NG)=GY
+      CSZ(NG)=GZ
+   27 CONTINUE
+C
+C SORT VECTORS IN ORDER OF INCREASING D
+C
+   
 
 
 
