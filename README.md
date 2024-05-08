@@ -39,11 +39,11 @@ unsure what this is doing
 Currently having an issue with this!
 
     
-```bash
+```shell
 gfortran -lgfortran -o factorial factorial.F
 ```
     
-```bash
+```shell
 ./factorial
 ```
 ### cross product
