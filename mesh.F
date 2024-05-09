@@ -15,7 +15,7 @@ C     *****************************************************************
       INTEGER X,Y,Z
       COMMON /MSH/DKX,DKY,DKZ,DHX,BOA,COA,KX(2500),KY(2500),KZ(2500),
      1WW(2500)
-      FORMAT(1H ,10X,'NUMBER OF POINTS ON MESH EXCEEDS DIMENSION OF ARRA
+    1 FORMAT(1H ,10X,'NUMBER OF POINTS ON MESH EXCEEDS DIMENSION OF ARRA
      1YS',2I5)
 C
       NDIM=2500
@@ -54,14 +54,13 @@ C
       IF (Z.EQ.NPYM) W=W/2.D0
       IF (X+Y+Z.EQ.3*NPYM) W=W/1.D0
       IF (X+Y+Z.EQ.0) W=W/1.D0
-      W(NP)=W
+      WW(NP)=W
    30 CONTINUE
       NPT=NP
       RETURN
    21 NP=0
 
-CCCCCCCCCCCCCCTHIS NEEDS TO BE CLECKED AND IS ON PG 150 CCCCCCC
-      C
+C
 C     FCC IRREDUCIBLE ZONE DEFINED BY
 C       .LE. KZ .LE. KX .LE. KY .LE. 2PI/A
 C       +X +Z .LE. 3PI/A
@@ -94,13 +93,14 @@ C
       IF(X.EQ.Y.AND.Y.EQ.Z) W=W/3.D0
       IF(Z.EQ.0) W=W/2.D0
       IF(X.EQ.0) W=W/2.D0
-      IF(Y.EQ.NPYM) W=W/2.DO
-      IF(X+Y+Z.EQ.O) W=1.DO
+      IF(Y.EQ.NPYM) W=W/2.D0
+      IF(X+Y+Z.EQ.0) W=1.D0
       WW(NP)=W
    31 CONTINUE  
       NPT=NP
-      NP=0
-
+      RETURN
+   22 NP=0
+      
 
 
 C     BCC IRREDUCIBLE ZONE DEFINED BY
@@ -138,9 +138,17 @@ C     check this
       IF(X.EQ.Y.AND.Y.EQ.Z) W=W/3.D0
       IF(Z.EQ.0) W=W/2.D0
       IF(X.EQ.0) W=W/2.D0
-      IF(Y.EQ.NPYM) W=W/2.DO
-      IF(X+Y+Z.EQ.O) W=1.DO
+      IF(Y.EQ.NPYM) W=W/2.D0
+      IF(X+Y+Z.EQ.O) W=1.D0
       WW(NP)=W
-   31 CONTINUE  
+   32 CONTINUE  
       NPT=NP
-      NP=0      
+      RETURN
+   23 NP=0
+
+CCC STILL MISSING PAGE 152-153
+      STOP
+  999 WRITE(6,1) NP,NDIM
+      STOP
+C      END
+C      
