@@ -8,7 +8,7 @@ CANONICAL_SRCS = alpha.F convergence.F factor.F gaunt.F spherical.F sym_to_rect.
 
 CANONICAL_OBJS += $(CANONICAL_SRCS:.F=.o)
 
-CANONICAL_LIB = libcanonical.a
+CANONICAL_LIB = ../lib/libcanonical.a
 
 .F.o: Makefile
 	$(F77) -c $<
