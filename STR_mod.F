@@ -19,7 +19,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       character txt(15)
       CHARACTER*4 POINT      
       INTEGER IDUM1            
-      DOUBLE PRECISION DUM1
+      real*8 DUM1
       DATA POINT/'    '/, IDUM1/0/, DUM1/0.D0/
 CCCCCCCCCCCCCCCCCCCCC WORKING AROUND ORIGINAL ISSUE CODE COMMENTED BELOW  CCC    
       
@@ -66,7 +66,7 @@ c      IF LPP.GT.5 ONLY REAL SPACE SUMMATIONS IN <SMTRX>
       L=NL2-1
       KLMO=L*(L+1)+L+1
 
-C      CALL FACTOR(4*(NL-1))
+c      CALL FACTOR(4*(NL-1))
 C      CALL GAUNT
 C      CALL LIMAO(NGLN(1),SOO)
 
@@ -281,8 +281,8 @@ C
       DKM=DMAX1(DK(1),DK(2),DK(3))
       DDM=TWOPI/DDM
       DKM=TWOPI/DKM
-      NUMR=2*(IFIX(RA/DKM)+1)+1
-      NUMG=2*(IFIX(GA/DDM)+1)+1
+      NUMR=2*(INT(RA/DKM)+1)+1
+      NUMG=2*(INT(GA/DDM)+1)+1
       NUMRH=NUMR/2+1
       NUMGH=NUMG/2+1
       WRITE(6,11) NUMR, NUMG
@@ -459,7 +459,7 @@ C **********************************************************************
       COMMON /LDATA/LL(49), MM(49)
       COMMON /VEC/BSX(3),BSY(3),BSZ(3),BKX(3),BKY(3),BKZ(3),QX(6),QY(6),
      1QZ(6), ASX(500), ASY(500), ASZ(500), AKX(500), AKY(300), AKZ(300),
-     2DR(500),DS(300),
+     2DR(500),DG(300),
      3USX(500),USY(500),USZ(500),UKX(300),UKY(300),UKZ(300)
       COMMON/YLMD/YLM(49)
       DIMENSION GLNS(500,1),FBLN(500,7),BDOTQ(500),DRQ(500),
@@ -628,7 +628,7 @@ C PRINT STRUCTURE CONSTANT MATRIX
       DO 42 ILM=1, NLM
       I1=I1+IDIM
       I2=I1+ILM
-   42 RITE(6, 100) (SRKLP(LIN), LIN=ILM, I2, IDIM)
+   42 WRITE(6, 100) (SRKLP(LIN), LIN=ILM, I2, IDIM)
       WRITE(6, 101)
       I1=-IDIM
       DO 43 ILM=1, NLM
@@ -641,7 +641,221 @@ C PRINT STRUCTURE CONSTANT MATRIX
       IF(NQ.EQ.1) RETURN 
 C
 C     REPEAT FIRST DIAGONAL BLOCK
-C FIRST PART OF PAGE 140
+c
+      JQQ=0
+      DO 24 JQ=2, NQ
+      JQQ=JQQ+(1+IDIM)*NLM
+      J1=IDIM
+      DO 24 JLM=1, NLM
+      J1=J1+IDIM
+      DO 24 ILM=JLM, NLM
+      LIN=J1+ILM
+      LNIQ=JQQ+LIN
+      SRKL(LINQ)=SRKL(LIN)
+C ERROR MUST HAVE POINTER VALRIABLE 
+   24 SIKLP(LINQ)=SIKLP(LIN)
+      NROP=NRO+1
+C     PG 141
+      
+      DO 29 I=1,NROP,NUMVR
+      PRD=PKX*ASX(I)+PKY*ASY(I)+PKZ*ASZ(I)
+  29  CXPRDK(I)=CDEXP(CIM*PRD)
+      
+c      QQP OFF DIAGONAL BLOCKS (PG 141)
+
+      NQM=NQ-1
+      JQ0=-NLM*IDIM
+      DO 20 JQ=1,NQM
+      JQ0=JQ0+NLM*IDIM
+      JQP=JQ+1
+      JQ0Q=JQ0+NLM*IDIM
+      QPX=QX(JQ0)
+      QPY=QY(JQ0)
+      QPZ=QZ(JQ0)
+      DO 20 IQ=JQP,NQ
+      IQQ=(IQ-1)*NLM*JQ0
+      QPPX=QX(IQQ)-QPX
+      QPPY=QY(IQQ)-QPY
+      QPPZ=QZ(IQQ)-QPZ
+      DO 36 I=1,NUMVR
+      X=ASX(I)-QPPX
+      Y=ASY(I)-QPPY
+      Z=ASZ(I)-QPPZ
+      D=DSQRT(X*X+Y*Y+Z*Z)
+      DRQ(I)=D
+      IF (D.GT.RMAX) GO TO 36
+      ALFA=ALAMDA*D
+      USX(I)=X/D
+      USY(I)=Y/D
+      USZ(I)=Z/D
+ 
+C
+C     CONVERGENCE FUNCTION, REAL SPACE
+C
+      DO 37 LP=1,NL2P
+      L=LP-1
+      NG=NGLN(LP)
+  37  GLNS(I,LP)=GLN(ALFA,L,NG)
+  36  CONTINUE
+      DO 38 I=1,NUMVG
+      IF (D.GT.GMAX) GO TO 38
+      BDOTQ(I)=(UXK(I)*QPPX+UKY(I)*QPPY+UKZ(I)*QPPZ)*D
+      BETA=D/ALAMDA
+C
+C     CONVERGENCE FUNCTION, RECIP. SPACE
+C
+      DO 39 LP=1,NL2P
+      L=LP-1
+      NG=NGLN(LP)
+  39  FBLN(I,LP)=BETA**((L-2)/(1.D00+BETA*BETA))*(NG+1)
+  38  CONTINUE
+
+ccccccccccccccccccccccccccccccccccccccccccccccccc
+C
+C     EVALUATION OF LATTICE SUMS FOR QPP .NE. 0
+C
+      DO 46 KLM=1,KLM0
+      SUMR(KLM)=DCMPLX(0.D00,0.D00)
+   46 SUMG(KLM)=DCMPLX(0.D00,0.D00)
+   
+C
+C     REAL SPACE
+C
+      DO 40 I=1,NUMVR
+      IF(DRQ(I).GT.RMAX) GO TO 40
+      CALL YLMRK(USX(I),USY(I),USZ(I),NL2)
+      KLM=0
+      DO 21 LP=1,NL2P
+      L=LP-1
+      NM=L*2+1
+      DO 21 M=1,NM
+      KLM=KLM+1
+   21 SUMR(KLM)=SUMR(KLM)+GLNS(I,LP)*YLM(KLM)*CXPRDK(I)
+      IF(NL2. LE.5) GO TO 40
+C
+C     IF L IS LARGER THAN 4, REAL SPACE SUMMATIONS ONLY
+C
+      DO 54 LP=6,NL2
+      SORO=(SWS/DRQ(I))**LP
+      NM=LP*2-1
+      DO 54 M=1,NM
+      KLM=KLM+1
+   54 SUMR(KLM)=SUMR(KLM)+SORO*YLM(KLM)*CXPRDK(I)
+   40 CONTINUE
+C
+C     RECIP. SPACE
+C
+      DO 41 I=1,NUMVG
+      IF(DG(I).GT.GMAX) GO TO 41
+      CALL YLMRK(UXK(I),UYK(I),UKZ(I),NL2P)
+      KLM=0
+      DO 47 LP=1,NL2P
+      L=LP-1
+      NM=L*2+1
+      DO 47 M=1,NM
+      KLM=KLM+1
+   47 SUMG(KLM)=SUMG(KLM)+FBLN(I,LP)*YLM(KLM)*CDEXP(CIM*BDOTQ(I))
+   41 CONTINUE
+C
+
+C
+C     SET UP STRUCTURE CONSTANT MATRIX FROM THE LATTICE SUMS
+C
+      CIL=CIM
+      KLM=0
+      DO 56 LP=1,NL2
+      L=LP-1
+      NM=L*2+1
+      CLI=CIL+CCIM
+      IF(LP.GT.5) GO TO 55
+      AR=SWSL*LP
+      AG=PL30M*AR/DAC(LP)
+      DO 48 M=1,NM
+      KLM=KLM+1
+   48 SR(KLM)=AR*SUMR(KLM)*CIL+AG*SUMG(KLM)
+      GO TO 56
+   55 DO 57 M=1,NM
+      KLM=KLM+1
+   57 SR(KLM)=SUMR(KLM)*CIL
+   56 CONTINUE
+C
+C     INSERT INTO LOWER TRIANGLE
+C
+
+C
+      J1E=IDIM
+      J2=16
+      DO 23 JLM=1,NLM
+      J1=J1+IDIM
+      J2=J2+16
+      L=LL(JLM)
+      DO 23 ILM=1,NLM
+      LIN=J1+ILM
+      LINC=J2+ILM
+      LINQ=JQ+LIN
+      LPP=L+LL(ILM)
+      MPP=MM(ILM)-M
+      KLM=LP*PL(LP)+LPP+MPP+1
+      SRC=SR(KLM)+C(LINC)
+      SRKLP(LINQ)=REAL(SRC)
+   23 SIKLP(LINQ)=AIMAG(SRC)
+ 
+C
+      IF(ICNVG.EQ.0) GO TO 60
+C
+C     TEST OF SPLITTING PARAMETERS
+C
+
+      KLM=0
+      DO 61 LP=1,NL2P
+      AR=SWSL*LP
+      NM=LP*2+1
+      AG=PL30M*AR/DAC(LP)
+      DO 61 M=1,NM
+      KLM=KLM+1
+      SUMR(KLM)=SUMR(KLM)*AR
+   61 SUMG(KLM)=SUMG(KLM)*AG
+      WRITE(6,107)
+      WRITE(6,103) (SUMR(K),K=1,KLM)
+      WRITE(6,106)
+      WRITE(6,103) (SUMG(K),K=1,KLM)
+   60 IF(NOWRT.EQ.0) GO TO 20
+C
+C     PRINT STRUCTURE CONSTANT MATRIX
+C PG 143
+
+      WRITE(6,104) IQ,JQ
+      DO 31 ILM=1,NLM
+      J1=IQQ+ILM
+      J2=J1+(NLM-1)*IDIM
+   31 WRITE(6,100) (SRKLP(LINQ),LINQ=J1,J2,IDIM)
+      WRITE(6,101)
+      DO 32 ILM=1,NLM
+      J1=IQQ+ILM
+      J2=J1+(NLM-1)*IDIM
+   32 WRITE(6,100) (SIKLP(LINQ),LINQ=J1,J2,IDIM)
+   20 CONTINUE
+      RETURN
+      END
+
+      SUBROUTINE CROSS(AX,AY,AZ,BX,BY,BZ,CX,CY,CZ)
+
+C
+C     *****************************************************************
+C     * CROSS PRODUCT (CX,CY,CZ) = (AX,AY,AZ) * (BX,BY,BZ)           *
+C     *****************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+C
+      CX=AY*BZ-BY*AZ
+      CY=BX*AZ-AX*BZ
+      CZ=AX*BY-BX*AY
+      RETURN
+      END
+
+      
+      
+C     FIRST PART OF PAGE 140
+      
       
     
 c     end program
