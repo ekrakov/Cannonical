@@ -1,10 +1,9 @@
-      SUBROUTINE KTRNSF(LAT,KXX,KXY,KXZ,PXX,PXY,PXZ)
-C
+      SUBROUTINE KTRNSF(LAT,KKX,KKY,KKZ,PKX,PKY,PKZ)
 C     *****************************************************************
 C     * TRANSFORMATION FROM SYMMETRY TO RECTANGULAR COORDINATES       *
 C     *****************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
-      COMMON/MSH/DKX,KXY,DXZ,DHX,BOA,COA,KX(2500),KY(2500),KZ(2500),
+      COMMON/MSH/DKX,DKY,DKZ,DHX,BOA,COA,KX(2500),KY(2500),KZ(2500),
      1W(2500)
 C
       GO TO (21,21,21,21,21,21,21,22), LAT
