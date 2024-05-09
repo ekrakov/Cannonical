@@ -1,4 +1,3 @@
-      program main	
       implicit real*8 (A-H,O-Z)
       complex*16 cim, ccim, sphrm, dcmplx	
       common/b1/cim,ccim,c(16,16),fac(13),dac(13),ngln(10),
