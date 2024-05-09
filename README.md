@@ -6,14 +6,14 @@ example input
 
 ```
 Structure Constants for BCC Lattice
-2.5 3       17.8       1          0
-3   1       3445555555 1          0
-3   1.0     7.
-0.5 0.5     0.5        -0.5       0.5
+2.5 3       17.8       1          0    # RMAX GMAX
+3   1       3445555555 1          0    # NL NQ NGLN ALAMDA 
+3   1.0     7.                         # LAT BOA COA 
+0.5 0.5     0.5        -0.5       0.5  # TRANSLATION VECTORS SPANNING CELLS 
 -0.5 0.5    -0.5       0.5        0.5
 0   0       0          0          0.
-0   0       17         0          0 ```
-
+0   0       17         0          0
+```
 
 
 
@@ -28,17 +28,26 @@ Structure Constants for BCC Lattice
     
 
 ### Transformation from symmetry to rectangular cords
-    unsure what this is doing 
+
+unsure what this is doing 
 
 ### alpha calculation???
 
 ### convergence functions
 
 ### factorial calculation
-    Currently having an issue with this!
+Currently having an issue with this!
+
     
+```shell
+gfortran -lgfortran -o factorial factorial.F
+```
+    
+```shell
+./factorial
+```
 ### cross product
-    working test script 
+working test script 
 
 ### generate vectors of direct and real space
 
@@ -46,41 +55,13 @@ Structure Constants for BCC Lattice
 
 There are currently three files:
 
-
-Input
-RMAX, GMAX (FIRST LINE) radii for k and q respectively (Rest zeros). 
-Third line
-Nl = 1-l max  (so NL=3 includes s,p, and d electrons)
-nq is the number of atoms per primitive cell
-NGLN?
-ALAMDA? (DETERMINED WITH TEST RUNS WITH ICNVRG=1)
-FOURTH LINE
-
-LAT (SELECTS BZ TO BE USED IN CALCULATION ACCORDING TO TABLE IN SUBROUTINE MESH)
-BOA B/A 
-COA C/A
-
-.....
-TRANSLATIONAL VECTORS SPANNING UNIT CELL
-
-
-
-
 ### spherical:
 
 describe spherical harmonic function
 
-### factorial:
 
-At the moment, this code is in fortran 77. To run,
 
-```bash
-gfortran -lgfortran -o factorial factorial.F
-```
 
-```bash
-./factorial
-```
 
 ## LMTO
 
