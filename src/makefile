@@ -3,7 +3,7 @@ AR = ar
 
 .PHONY: all clean
 
-CANONICAL_SRCS = alpha.F convergence.F factor.F gaunt.F spherical.F sym_to_rect.F
+CANONICAL_SRCS = limao.F convergence.F factor.F gaunt.F spherical.F sym_to_rect.F vecgen.F cross.F
 # add after fixing mesh.F
 
 CANONICAL_OBJS += $(CANONICAL_SRCS:.F=.o)
