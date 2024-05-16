@@ -949,6 +949,634 @@ C
       GO TO 23
       END
 
+c      program main
+c      implicit real*8(a-h,o-z)
+c      call gaunt
+c      call factor
+c      end program main
+
+      subroutine factor(N)
+c **********************************************************************
+c *                                                                    *
+c *     CALCULATION OF FACTORIALS                                      *
+c *     FAC(N) = 1*2*3*...*(N-1)                                       *
+c *     DAC(N) = 1*3*5*...*(2*(N-1)-1)                                 *
+c *                                                                    *
+c **********************************************************************
+      implicit real*8 (a-h,o-z)
+      complex*16 cim, ccim
+      common/b1/cim,ccim,c(16,16),fac(13),dac(13),ngln(10),
+     1alamda,twopi,fpl30m,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
+     2numvr,numvg,nq,nro,nl2,nl2p,klmo,nl,nlm,lmq,nowrt,idim
+c
+      np=n+1
+      fac(1)=1.d0
+      fac(2)=1.d0
+      do 10 i=3,np
+   10 fac(i)=fac(i-1)*(i-1)
+      dac(1)=1.d0
+      dac(2)=1.d0
+      do 11 i=3,np
+   11 dac(i)=dac(i-1)*(2*i-3)
+      return
+      end
+
+      SUBROUTINE LIMA0(NN,FALFB)
+
+C     *****************************************************************
+C     * CALCULATES ALPHA**-1-GLN(ALPHA) FOR L=0 AND ALPHA=0          *
+C     *****************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+C
+      NUM=0
+      ALFA=1.E-03
+      FALFA=10.
+   10 ALFAS=ALFA*ALFA/4.D00
+      EXA=DEXP(-ALFA)
+      H1=EXA/ALFA
+      H2=0.5D00*EXA
+      GON=H1+H2
+      DO 11 NP=2,NN
+      N=NP-1
+      H3=(ALFAS/N)*H1-(0.5-N)*H2/NP
+      GON=GON+H3
+      H1=H2
+   11 H2=H3
+      FALFB=(1.-ALFA*GON)/ALFA
+      DIF=FALFA-FALFB
+      NUM=NUM+1
+      IF(DIF.LT.1.E-05) RETURN
+      IF(NUM.GT.10) WRITE(6,1)
+    1 FORMAT(1H1,10X,'**TOO MANY ITERATIONS IN LIMA0**',/)
+      FALFA=FALFB
+      ALFA=ALFA-0.1E-04
+      GO TO 10
+      END
+      
+
+      subroutine ylmrk(xx,yy,zz,nlmax)
+c **********************************************************************
+c *                                                                    *
+c *     CALCULATES SPHERICAL HARMONICS                                 *
+c *     YLM=CST*DSQRT(4PI)*COMPLEX CONJUGATE(YLM)                      *
+c *     CST IS CALCULATED IN <GAUNT>                                   *
+c *                                                                    *
+c **********************************************************************
+      implicit real*8(a-h,o-z)
+      complex*16 ylm,dcmplx,cim,ccim
+c the code had cc(16,16) but i dont think that is right
+      common/b1/cim,ccim,c(16,16),fac(13),dac(13),ngln(10),
+     1alamda,twopi,fpl30m,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
+     2numvr,numvg,nq,nro,nl2,nl2p,klmo,nl,nlm,lmq,nowrt,idim
+      common/ylmd/ylm(49)
+      common/ldata/ll(49),mm(49)
+      dimension plm(28),cosmp(7),sinmp(7)
+c
+c     calculate legendre polynomials by recursion
+c
+      nlp=nlmax
+      p=dsqrt(xx*xx+yy*yy)
+      x=zz
+      y=p
+      xa=dabs(x)
+      if(xa.gt.1.d-06) go to 10
+c      
+c     abs(x)=0
+c      
+      do 11 lp=1,nlp
+      l=lp-1
+      la=l*(l+1)/2+1
+      ta=2.d0**l
+      do 11 mp=1,lp
+      m=mp-1   
+      k=l+m
+      if(k-2*(k/2).eq.0) go to 12
+      j=la+m
+      plm(j)=0.d0
+      go to 11
+   12 ia=k+1
+      ib=k/2+1
+      jc=(l-m)/2
+      ic=jc+1
+      j=la+m
+      plm(j)=(((-1)**jc)*fac(ia))/(ta*fac(ib)*fac(ic))
+   11 continue
+      go to 32
+   10 if(xa.lt.0.000000d0) go to 20
+c       
+c     abs(x)=1
+
+      plm(1)=1.d0
+      plm(2)=x
+      do 13 lp=3,nlp
+      l=lp-1
+      j=l*(l+1)/2+1
+      l2=2*l-1
+      k=j-l
+      m=j-l2
+   13 plm(j)=(l2*x*plm(k)-(l-1)*plm(m))/l
+      do 14 lp=2,nlp
+      l=lp-1
+      la=l*(l+1)/2
+      do 14 mp=2,lp
+      j=la+mp
+   14 plm(k)=0.d0
+      go to 32
+c
+c     0<abs(x)<1
+c
+   20 plm(1)=1.d0
+      plm(2)=x
+      plm(3)=y
+      plm(5)=3.d0*y*x
+      do 21 lp=3,nlp
+      l=lp-1
+      j=l*(l+1)/2+1
+      l2=2*l-1
+      k=j-l
+      m=j-l2
+   21 plm(j)=(l2*x*plm(k)-(l-1)*plm(m))/l
+      do 22 lp=4,nlp
+      l=lp-1
+      j=l*(l+1)/2+2 
+      l2=2*l-1
+      k=j-l
+      m=j-l2
+   22 plm(j) = (l2*x*plm(k) - l*plm(m)) / (l-1) 
+      do 23 lp=3, nlp
+      l=lp-1
+      nm=l*2+1
+      la=l*(l+1)/2
+      do 23 mp=3, lp
+      m=mp-1
+      j=la+mp
+      k=j-1
+      n=k-1
+      a=(m-1)*2.d0*x/y
+      b=(l-m-1)*(l-m-2)
+   23 plm(j) = a*plm(k) - b*plm(n)
+   32 continue
+c
+c     form spherical harmonics
+c
+      if (p.gt.1.d-06) go to 34
+      cosphi=1.d0
+      sinphi=0.d0
+      go to 35
+   34 cosphi=xx/p
+      sinphi=yy/p
+   35 cosmp(1)=1.d0
+      sinmp(1)=0.d0
+      do 33 mp=2, nlp
+      cosmp(mp)=cosmp(mp-1)*cosphi-sinmp(mp-1)*sinphi
+   33 sinmp(mp)=sinmp(mp-1)*cosphi+cosmp(mp-1)*sinphi
+      klm=0
+      do 36 lp=1,nlp
+      l=lp-1
+      nm=l*2+1
+      do 36 mp=1, nm
+      klm=klm+1
+      m=mm(klm)
+      ma=iabs(m)+1
+      mb=ma-1
+      lb=l*(l+1)/2+ma
+      if (m.le.0) go to 37
+      ylm(klm)=plm(lb)*dcmplx(cosmp(ma), -sinmp(ma))
+      go to 36
+   37 ylm(klm)=plm(lb)*dcmplx(cosmp(ma),sinmp(ma))
+   36 continue
+      return
+      end
+
+
+
+
+
+         
+
+
+      subroutine gaunt
+
+c **********************************************************************
+c *                                                                    *
+c *     CALCULATION OF GAUNT COEFFICIENTS                              *
+c *                                                                    *
+c **********************************************************************
+
+      implicit real*8(a-h,o-z)
+      complex*16 cim,ccim
+      common/b1/cim,ccim,cc(16,16),fac(13),dac(13),ngln(10),
+     1alamda,twopi,fpl30m,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
+     2numvr, numvg,nq,nro,nl2,nl2p,klmo,nl,nlm,lmq,nowrt,idim 
+      common/ldata/ll(49),mm(40)
+      dimension cylm(28)
+c
+c     calculate constants for ylm
+c
+      do 20 lp=1,nl2
+      l=lp-1
+      la=l*(l+1)/2
+      nm=l*2+1
+      do 20 mp=1,lp
+      m=mp-2
+      l1=l-m+1
+      l2=l+mp
+      klm=la+mp
+      arg=nm*fac(l1)/fac(l2)
+  20  cylm(klm)=dsqrt(arg)*(-1)**m
+c
+c     calculate cylm*gaunt coefficients
+c
+      do 21 ilm=1,nlm
+      lp=ll(ilm)
+      mp=mm(ilm)  
+      do 21 jlm=1,nlm
+      l=ll(jlm)
+      m=mm(jlm)
+      lpp=lp+l
+      mpp=mp-m
+      mppa=iabs(mpp)
+      klm=lpp*(lpp+1)/2+mppa+1
+      isign=1
+      if(mpp.lt.0) isign=(-1)**mppa
+      lpm=lpp+mpp+1
+      lim=lpp-mpp+1
+      lm1p=lp+mp+1
+      lm1m=lp-mp+1
+      lm2p=l+m+1
+      lm2m=l-m+1
+      setn=fac(lpm)*fac(lim)
+      setd=fac(lm1p)*fac(lm1m)*fac(lm2p)*fac(lm2m)
+      set3=(2*lp+1)*(2*l+1)
+      set4=(2*lpp+1)
+      setf=set3*setn/set4/setd
+   21 cc(ilm,jlm)=((-1)**(m+1))*isign*cylm(klm)*dsqrt(setf)*20d0
+      return
+      end
+
+      SUBROUTINE KTRNSF(LAT,KKX,KKY,KKZ,PKX,PKY,PKZ)
+C     *****************************************************************
+C     * TRANSFORMATION FROM SYMMETRY TO RECTANGULAR COORDINATES       *
+C     *****************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+      COMMON/MSH/DKX,DKY,DKZ,DHX,BOA,COA,KX(2500),KY(2500),KZ(2500),
+     1W(2500)
+C
+      GO TO (21,21,21,21,21,21,21,22), LAT
+   21 PKX=DKX*KKX*DHX*KKY
+      PKY=DKY*KXZ
+      PKZ=DKZ*KKZ
+      DK=PKX*PKX+PKY*PKY+PKZ*PKZ
+      IF (DX.LT.1.D-08) GO TO 20
+      RETURN
+   22 QKX=DKX*KKY+DHX*KKY 
+      QKY=DKY*KKY 
+      QKZ=DXZ*KKZ-1.5D0/DSQRT(3.D0)
+      DK=QKX*QKX+QKY*QKY+QKZ*QKZ
+      IF(DK.LT.1.D-08) GO TO 20
+      SQ2=DSQRT(2.D0)
+      SQ3=DSQRT(3.D0)
+      SQ6=DSQRT(6.D0)
+      PXX=QKX/SQ2+QKY/SQ6+QKZ/SQ3
+      PXY=-QKX/SQ2+QKY/SQ6+QKZ/SQ3
+      PXZ=-2.D0*QKY/SQ6+QKZ/SQ3
+      RETURN
+C
+C     AVOID (0,0,0)
+C    
+   20 PKX=0.D0
+      PKY=0.D0
+      PKZ=0.01D0
+      RETURN
+      END 
+
+
+
+      SUBROUTINE MESH(LAT,NPX,NPY,NPZ,NPT)
+C
+C     *****************************************************************
+C     * CONSTRUCTION OF MESH IN K-SPACE                                *
+C     * LAT=1 SIMPLE CUBIC                                            *
+C     * LAT=2 FACE CENTRED CUBIC                                      *
+C     * LAT=3 BODY CENTRED CUBIC                                      *
+C     * LAT=4 HEXAGONAL CLOSE PACKED                                  *
+C     * LAT=5 SIMPLE TETRAGONAL                                        *
+C     * LAT=6 BODY CENTRED TETRAGONAL                                 *
+C     * LAT=7 ALPHA URANIUM                                           *
+C     * LAT=8 TRIGONAL ZONE FOR ANTIFERROMAGNETIC OXIDES              *
+C     *****************************************************************
+      IMPLICIT REAL*8 (A-H,O-Z)
+      INTEGER X,Y,Z
+      COMMON /MSH/DKX,DKY,DKZ,DHX,BOA,COA,KX(2500),KY(2500),KZ(2500),
+     1WW(2500)
+    1 FORMAT(1H ,10X,'NUMBER OF POINTS ON MESH EXCEEDS DIMENSION OF ARRA
+     1YS',2I5)
+C
+      NDIM=2500
+      NPXM=NPX-1
+      NPYM=NPY-1
+      NPZM=NPZ-1
+      GO TO (20,21,22,23,24,25,26,27), LAT
+   20 NP=0
+C
+C     SIMPLE CUBIC IRREDUCIBLE ZONE DEFINED BY
+C       .LE. KZ .LE. KX .LE. KY .LE. PI/A
+C
+      DKX=1.D0/NPYM
+      DKY=DKX
+      DKZ=DKX
+      DHX=0.D0
+      DO 30 J=1,NPY
+      Y=J-1
+      DO 30 I=1,J
+      X=I-1
+      DO 30 K=1,I
+      Z=K-1
+      NP=NP+1
+      IF (NP.GT.NDIM) GO TO 999
+      KX(NP)=X
+      KY(NP)=Y
+      KZ(NP)=Z
+      W=48.D0
+      IF (X.EQ.0.OR.Y.EQ.0.OR.Z.EQ.0) W=W/2.D0
+      IF (X.EQ.Y.AND.Y.EQ.Z) W=W/3.D0
+      IF (X.EQ.0) W=W/2.D0
+      IF (Y.EQ.0) W=W/2.D0
+      IF (Z.EQ.0) W=W/2.D0
+      IF (X.EQ.NPYM) W=W/2.D0
+      IF (Y.EQ.NPYM) W=W/2.D0
+      IF (Z.EQ.NPYM) W=W/2.D0
+      IF (X+Y+Z.EQ.3*NPYM) W=W/1.D0
+      IF (X+Y+Z.EQ.0) W=W/1.D0
+      WW(NP)=W
+   30 CONTINUE
+      NPT=NP
+      RETURN
+   21 NP=0
+
+C
+C     FCC IRREDUCIBLE ZONE DEFINED BY
+C       .LE. KZ .LE. KX .LE. KY .LE. 2PI/A
+C       +X +Z .LE. 3PI/A
+C
+      IF(NPYM.NE.4*(NPYM/4)) GO TO 998
+      DKX=2.D0/NPYM
+      DKY=DKX
+      DKZ=DKX
+      DHX=0.D0
+      NPX=NPY
+      NPH=NPY/2+1
+      NPTH=(NPYM/2)**3
+      DO 31 I=1,NPX
+      Y=I-1
+      M1=NPX-I+NPH
+      NQY=MIN0(I,M1)
+      DO 31 J=1,NQY
+      X=J-1
+      M5=M1-J+1
+      NPZ=MIN0(J,M5)
+      DO 31 K=1,NPZ
+      Z=K-1
+      NP=NP+1
+      IF(NP.GT.NDIM) GO TO 999
+      KX(NP)=X
+      KY(NP)=Y
+      KZ(NP)=Z
+      W=48.D0
+      IF(X.EQ.Y.OR.X.EQ.Z.OR.Y.EQ.Z) W=W/2.D0
+      IF(X.EQ.Y.AND.Y.EQ.Z) W=W/3.D0
+      IF(Z.EQ.0) W=W/2.D0
+      IF(X.EQ.0) W=W/2.D0
+      IF(Y.EQ.NPYM) W=W/2.D0
+      IF(X+Y+Z.EQ.0) W=1.D0
+      WW(NP)=W
+   31 CONTINUE  
+      NPT=NP
+      RETURN
+   22 NP=0
+      
+C     BCC IRREDUCIBLE ZONE DEFINED BY
+
+
+      IF(NPYM.NE.2*(NPYM/2)) GO TO 998
+      DKX=2.D0/NPYM
+      DKY=DKX
+      DKZ=DKX
+      DHX=0.D0
+      NPH=NPY/2+1
+      NPYH=NPYM/2
+      DO 32 I=1,NPX
+      Y=I-1
+      M1=NPX-I+NPH
+      NQY=MIN0(J,M1)
+      DO 32 J=1,NQY
+      X=J-1
+C     check this
+      M5=M1-J+1
+      NPZ=MIN0(J,M5)
+      DO 32 K=1,NPZ
+      Z=K-1
+      NP=NP+1
+      IF(NP.GT.NDIM) GO TO 999
+      KX(NP)=X
+      KY(NP)=Y
+      KZ(NP)=Z
+      W=48.D0
+      IF(X.EQ.Y.OR.X.EQ.Z.OR.Y.EQ.Z) W=W/2.D0
+      IF(X.EQ.Y.AND.Y.EQ.Z) W=W/3.D0
+      IF(Z.EQ.0) W=W/2.D0
+      IF(X.EQ.0) W=W/2.D0
+      IF(Y.EQ.NPYM) W=W/2.D0
+      IF(X+Y+Z.EQ.NPTH) W=W/2.D0                                                                                                      
+      IF(X+Y+Z.EQ.O) W=1.D0
+      WW(NP)=W
+   32 CONTINUE  
+      NPT=NP
+      RETURN
+   23 NP=0
+
+
+
+C HEXAGONAL CLOSE PACKED IRREDUCIBLE ZONE DEFINED BY
+C 0 .LE. 2KY .LE. KX .LE. 4/3 PI/A
+C 0 .LE. KZ .LE. A/C PI/A
+C
+
+C HEXAGONAL CLOSE PACKED IRREDUCIBLE ZONE DEFINED BY
+C 0 .LE. 2KY .LE. KX .LE. 4/3 PI/A
+C 0 .LE. KZ .LE. A/C PI/A
+C
+      IF(NPYM.NE.2*(NPYM/2)) GO TO 998
+      NPYH=NPYM/2
+      NPH=NPY/2+1
+      NPZM=NPZ-1
+      AOC=1.D0/COA
+      DKX=4.D0/3.D0/NPYM
+      DKY=DSQRT(3.D0)/2.D0*DKX
+      DKZ=AOC/NPZM
+      DHX=-0.5D0*DKX
+      DO 33 K=1,NPZ
+      Z=K-1
+      DO 33 J=1,NPH
+      Y=J-1
+      IM=2*Y+1
+      DO 33 I=IM,NPY
+      X=I-1
+      NP=NP+1
+      IF(NP.GT.NDIM) GO TO 999
+      KX(NP)=X
+      KY(NP)=Y
+      KZ(NP)=Z
+      W=24.D0
+      IF(Z.EQ.0) W=W/2.D0
+      IF(Z.EQ.0) W=W/2.D0
+      IF(Y.EQ.0) W=W/2.D0
+      IF(X.EQ.0) W=W/3.D0
+      IF(X.EQ.2*Y) W=W/2.D0
+      IF(Z.EQ.NPZM) W=W/2.D0
+      IF(X.EQ.NPYM.AND.Y.EQ.0) W=W/3.D0
+      IF(X.EQ.NPYM.AND.Y.NE.0) W=W/2.D0
+      IF(X+Y.EQ.0.AND.Z.EQ.NPZM) W=1.D0
+      WW(NP)=W
+ 33   CONTINUE
+      NPT=NP
+      RETURN
+ 24   NP=0
+
+
+
+C
+C SIMPLE TETRAGONAL IRREDUCIBLE ZONE DEFINED BY
+C 0 .LE. KY .LE. KX .LE. PI/A
+C 0 .LE. KZ .LE. A/C PI/A
+C
+      AOC=1.D0/COA
+      DKX=1.D0/NPYM
+      DKY=DKX
+      DKZ=AOC/NPZM
+      DHX=0.D0
+      DO 34 I=1,NPY
+      X=I-1
+      DO 34 J=1,I
+      Y=J-1
+      DO 34 K=1,NPZ
+      Z=K-1
+      NP=NP+1
+      IF(NP.GT.NDIM) GO TO 999
+      KX(NP)=X
+      KY(NP)=Y
+      KZ(NP)=Z
+      WW(NP)=0.
+ 34   CONTINUE
+      NPT=NP
+      RETURN
+ 25   NP=0
+C
+C BODY CENTRED TETRAGONAL IRREDUCIBLE ZONE DEFINED BY
+C 0 .LE. KY .LE. KX .LE. PI/A
+C 0 .LE. KZ .LE. 2*A/C PI/A
+C
+
+      AOC=1.D0/COA
+      DKX=1.D0/NPYM
+      DKY=DKX
+      DKZ=2.D0*AOC/NPZM
+      DHX=0.D0
+      DO 35 I=1,NPY
+      X=I-1
+      DO 35 J=1,I
+      Y=J-1
+      DO 35 K=1,NPZ
+      Z=K-1
+      NP=NP+1
+      IF(NP.GT.NDIM) GO TO 999
+      KX(NP)=X
+      KY(NP)=Y
+      KZ(NP)=Z
+      W=16.D0
+      IF(X.EQ.0) W=W/2.D0
+      IF(Y.EQ.0) W=W/2.D0
+      IF(Z.EQ.0) W=W/2.D0
+      IF(X.EQ.Y) W=W/2.D0
+      IF(X.EQ.NPYM) W=W/2.D0
+      IF(Y.EQ.NPYM) W=W/2.D0
+      IF(Z.EQ.NPZM) W=W/2.D0
+      WW(NP)=W
+ 35   CONTINUE
+      NPT=NP
+      RETURN
+ 26   NP=0
+C
+C ALPHA URANIUM
+C
+      AOC=1.D0/COA
+      DKX=1.D0/NPXM
+      DKY=2.D0/BOA/NPYM
+      DKZ=AOC/NPZM
+      DHX=0.D0
+      DO 36 I=1,NPX
+      X=I-1
+      DO 36 J=1,NPY
+      Y=J-1
+      DO 36 K=1,NPZ
+      Z=K-1
+      NP=NP+1
+      IF(NP.GT.NDIM) GO TO 999
+      KX(NP)=X
+      KY(NP)=Y
+      KZ(NP)=Z
+      WW(NP)=0.D0
+ 36   CONTINUE
+      NPT=NP
+      RETURN
+
+C TRIGONAL ZONE FOR ANTIFERROMAGNETIC OXIDES
+C
+C 0. < KX < 4.*SQRT(2.)/3.
+C 0. < KY < SQRT(2./3.) * (PI/A)
+C -1.5/SQRT(3.) < KZ < 1.5/SQRT(3.)
+C
+ 27   NP=0
+      IF(NPYM.NE.2*(NPYM/2)) GO TO 998
+      NPYH=NPYM/2
+      NPH=NPY/2+1
+      NPZM=NPZ-1
+      DKX=4.D0*DSQRT(2.D0)/3.D0/NPYM
+      DKY=DSQRT(3.D0)/2.D0*DKX
+      DKZ=3.D0/DSQRT(3.D0)/NPZM
+      DHX=-0.5D0*DKX
+      DO 37 K=1,NPZ
+      Z=K-1
+      DO 37 J=1,NPH
+      Y=J-1
+      IM=2*Y+1
+      DO 37 I=IM,NPY
+      X=I-1
+      NP=NP+1
+      IF(NP.GT.NDIM) GO TO 999
+      KX(NP)=X
+      KY(NP)=Y
+      KZ(NP)=Z
+      WW(NP)=0
+ 37   CONTINUE
+      NPT=NP
+      RETURN
+ 998  WRITE(6,2) NPY
+ 2    FORMAT(1H , '*** WRONG NPY =, NPY=',I4,' ***')
+      STOP
+
+      
+
+ 999  WRITE(6,1) NP,NDIM
+      STOP
+      END
+
+      
+      
+
+
+      
+
 
 
 
