@@ -1,6 +1,6 @@
 c      program main	
       implicit real*8 (A-H,O-Z)
-      complex*16 cim, ccim, sphrm, dcmplx	
+      complex*16 cim, ccim, sphrm, cmplx	
       common/b1/cim,ccim,c(16,16),fac(13),dac(13),ngln(10),
      1alamda,twopi,fpl30m,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
      2numvr,numvg,nq,nro,nl2,nl2p,klmo,nl,nlm,lmq,nowrt,idim
@@ -46,8 +46,8 @@ C      data point/'    '/,idum1/0/,dum1/0.d0/
    15 FORMAT(I5,2E15.8)
    16 FORMAT(1H ,//,11X,'MODE,NPX,NPY,NPZ,NPT',5I5)
       IDIM=54
-      CIM=DCMPLX(0.D00,1.D00)
-      CCIM=DCMPLX(0.D00,-1.D00)
+      CIM=CMPLX(0.D00,1.D00)
+      CCIM=CMPLX(0.D00,-1.D00)
       PI=4.D00*DATAN(1.D00)
       TWOPI=2.D00*PI
       FOURPI=4.D00*PI
@@ -449,7 +449,7 @@ C CALCULATION OF THE STRUCTURE CONSTANT MATRIX
 C
 C **********************************************************************
       IMPLICIT REAL*8 (A-H, O-Z)
-      COMPLEX*16 SUMR, SUMG, SR, CIM, CCIM,CIL,DCMPLX,YLM,CDEXP,CXPRDK,
+      COMPLEX*16 SUMR, SUMG, SR, CIM, CCIM,CIL,CMPLX,YLM,CDEXP,CXPRDK,
      1SRC
       REAL*8 DREAL, DIMAG
       COMMON /B1/ CIM, CCIM, C(256), FAC(13), DAC(13), NGLN(10),
@@ -479,7 +479,7 @@ C     QQ DIAGONAL BLOCKS
       PKX=PKXP
       PKY=PKYP
       PKZ=PKZP
-      CXPRDK(1)=DCHPLX(1.D00,0.D00)
+      CXPRDK(1)=CMPLX(1.D00,0.D00)
       DO 22 I=2,NRO
       DRI=DR(I)
       USX(I)=ASX(I)/DRI
@@ -517,8 +517,8 @@ c     CONVERGENCE FUNCTION, RECIP. SPACE
 c     EVALUATION OF LATTICE SUMS FOR QPP .EQ. 0
 
       DO 44 KLM=1,KLMO
-      SUMR(KLM)=DCMPLX(0.D00,0.D00)
-   44 SUMG(KLM)=DCMPLX(0.D00,0.D00)
+      SUMR(KLM)=CMPLX(0.D00,0.D00)
+   44 SUMG(KLM)=CMPLX(0.D00,0.D00)
 
 c     real space
 
@@ -699,7 +699,7 @@ C
   36  CONTINUE
       DO 38 I=1,NUMVG
       IF (D.GT.GMAX) GO TO 38
-      BDOTQ(I)=(UXK(I)*QPPX+UKY(I)*QPPY+UKZ(I)*QPPZ)*D
+      BDOTQ(I)=(UKX(I)*QPPX+UKY(I)*QPPY+UKZ(I)*QPPZ)*D
       BETA=D/ALAMDA
 C
 C     CONVERGENCE FUNCTION, RECIP. SPACE
@@ -715,8 +715,8 @@ C
 C     EVALUATION OF LATTICE SUMS FOR QPP .NE. 0
 C
       DO 46 KLM=1,KLM0
-      SUMR(KLM)=DCMPLX(0.D00,0.D00)
-   46 SUMG(KLM)=DCMPLX(0.D00,0.D00)
+      SUMR(KLM)=CMPLX(0.D00,0.D00)
+   46 SUMG(KLM)=CMPLX(0.D00,0.D00)
    
 C
 C     REAL SPACE
@@ -747,7 +747,7 @@ C     RECIP. SPACE
 C
       DO 41 I=1,NUMVG
       IF(DG(I).GT.GMAX) GO TO 41
-      CALL YLMRK(UXK(I),UYK(I),UKZ(I),NL2P)
+      CALL YLMRK(UKX(I),UKY(I),UKZ(I),NL2P)
       KLM=0
       DO 47 LP=1,NL2P
       L=LP-1
@@ -795,7 +795,7 @@ C
       LINQ=JQ+LIN
       LPP=L+LL(ILM)
       MPP=MM(ILM)-M
-      KLM=LP*PL(LP)+LPP+MPP+1
+      KLM=LPP*LPP+LPP+MPP+1
       SRC=SR(KLM)+C(LINC)
       SRKLP(LINQ)=REAL(SRC)
    23 SIKLP(LINQ)=AIMAG(SRC)
@@ -956,7 +956,7 @@ c
       return
       end
 
-      SUBROUTINE LIMA0(NN,FALFB)
+      SUBROUTINE LIMAO(NN,FALFB)
 
 C     *****************************************************************
 C     * CALCULATES ALPHA**-1-GLN(ALPHA) FOR L=0 AND ALPHA=0          *
@@ -998,7 +998,7 @@ c *     CST IS CALCULATED IN <GAUNT>                                   *
 c *                                                                    *
 c **********************************************************************
       implicit real*8(a-h,o-z)
-      complex*16 ylm,dcmplx,cim,ccim
+      complex*16 ylm,cmplx,cim,ccim
 c the code had cc(16,16) but i dont think that is right
       common/b1/cim,ccim,c(16,16),fac(13),dac(13),ngln(10),
      1alamda,twopi,fpl30m,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
@@ -1116,9 +1116,9 @@ c
       mb=ma-1
       lb=l*(l+1)/2+ma
       if (m.le.0) go to 37
-      ylm(klm)=plm(lb)*dcmplx(cosmp(ma), -sinmp(ma))
+      ylm(klm)=plm(lb)*cmplx(cosmp(ma), -sinmp(ma))
       go to 36
-   37 ylm(klm)=plm(lb)*dcmplx(cosmp(ma),sinmp(ma))
+   37 ylm(klm)=plm(lb)*cmplx(cosmp(ma),sinmp(ma))
    36 continue
       return
       end
