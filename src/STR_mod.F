@@ -66,9 +66,9 @@ c      IF LPP.GT.5 ONLY REAL SPACE SUMMATIONS IN <SMTRX>
       L=NL2-1
       KLMO=L*(L+1)+L+1
 
-c      CALL FACTOR(4*(NL-1))
-C      CALL GAUNT
-C      CALL LIMAO(NGLN(1),SOO)
+      CALL FACTOR(4*(NL-1))
+      CALL GAUNT
+      CALL LIMAO(NGLN(1),SOO)
 
       WRITE(6,5) TXT
       WRITE(6,6) RMAX, GMAX, NL, NQ, NLM, LMQ, ALAMDA, NGLN, NOVCGN,
@@ -878,6 +878,7 @@ c
       return
       end
 
+      FUNCTION GLN(ALFA,LN,NN)
 C
 C     *****************************************************************
 C     * CALCULATION OF CONVERGENCE FUNCTIONS                          *
