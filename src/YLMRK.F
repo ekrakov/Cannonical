@@ -1,28 +1,3 @@
-      PROGRAM TEST_YLMRK
-C     Main program to test the calculation of spherical harmonics
-      IMPLICIT NONE
-      DOUBLE PRECISION XX, YY, ZZ
-      INTEGER NLMAX, I
-      COMPLEX*16 YLM(49)
-      EXTERNAL YLMRK
-
-C     Initialize input values for testing
-      XX = .5
-      YY = .5
-      ZZ = .5
-      NLMAX = 5
-      
-      PRINT *, 'Starting calculations with NLMAX =', NLMAX
-      PRINT *, 'Values: XX =', XX, 'YY =', YY, 'ZZ =', ZZ
-
-C     Call the spherical harmonics subroutine
-
-      CALL FACTOR(4*(NLMAX-1))
-      CALL YLMRK(XX,YY,ZZ,NLMAX)
-      PRINT *, 'YLM=',YLM
-
-      END
-
       subroutine ylmrk(xx,yy,zz,nlmax)
 c **********************************************************************
 c *                                                                    *
@@ -184,29 +159,5 @@ c    PRINT *, 'After calculation, YLM:', YLM
       return
       end
 
-      subroutine factor(N)
-c **********************************************************************
-c *                                                                    *
-c *     CALCULATION OF FACTORIALS                                      *
-c *     FAC(N) = 1*2*3*...*(N-1)                                       *
-c *     DAC(N) = 1*3*5*...*(2*(N-1)-1)                                 *
-c *                                                                    *
-c **********************************************************************
-      implicit real*8 (a-h,o-z)
-      complex*16 cim, ccim
-      common/b1/cim,ccim,c(16,16),fac(13),dac(13),ngln(10),
-     1alamda,twopi,fpl30m,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
-     2numvr,numvg,nq,nro,nl2,nl2p,klmo,nl,nlm,lmq,nowrt,idim
-c
-      np=n+1
-      fac(1)=1.d0
-      fac(2)=1.d0
-      do 10 i=3,np
-   10 fac(i)=fac(i-1)*(i-1)
-      dac(1)=1.d0
-      dac(2)=1.d0
-      do 11 i=3,np
-   11 dac(i)=dac(i-1)*(2*i-3)
-      return
-      end
+
 

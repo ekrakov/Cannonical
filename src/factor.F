@@ -12,7 +12,7 @@ c **********************************************************************
      1alamda,twopi,fpl30m,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
      2numvr,numvg,nq,nro,nl2,nl2p,klmo,nl,nlm,lmq,nowrt,idim
 c
-      np=n+9
+      np=n+1
       fac(1)=1.d0
       fac(2)=1.d0
       do 10 i=3,np
@@ -23,9 +23,3 @@ c
    11 dac(i)=dac(i-1)*(2*i-3)
       return
       end
-
-
-
-
-
-      
