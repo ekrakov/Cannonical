@@ -1,6 +1,7 @@
 c **********************************************************************
 c *                                                                    *
-c *     CALCULATION OF FACTORIALS                                      *
+
+c*     CALCULATION OF FACTORIALS                                      *
 c *     FAC(N) = 1*2*3*...*(N-1)                                       *
 c *     DAC(N) = 1*3*5*...*(2*(N-1)-1)                                 *
 c *                                                                    *
