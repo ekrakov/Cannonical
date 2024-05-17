@@ -1,4 +1,4 @@
-c      program main	
+c      program NPmain	AANP
       implicit real*8 (A-H,O-Z)
       complex*16 cim, ccim, sphrm, cmplx	
       common/b1/cim,ccim,c(16,16),fac(13),dac(13),ngln(10),
@@ -28,7 +28,7 @@ C      data point/'    '/,idum1/0/,dum1/0.d0/
     1 format(15a4)
     2 format(3e15.7)
     3 format(2i5,5x,10i1,e15.7)   
-    4 format(1h ,//,11x,'basisvectors',//)
+    4 format(1h ,//,11x,'basis vectors',//)
     5 format(1h1,10x,15a4,/)
     6 format(1h,10x,'rmax',g10.5,' gmax',f10.5,/
      1,10x,' nl',i4,' nq',i4,' nlm',i4,' lmq',i4,/,10x,' lamda',f10.5,
@@ -49,6 +49,7 @@ C      data point/'    '/,idum1/0/,dum1/0.d0/
       CIM=CMPLX(0.D00,1.D00)
       CCIM=CMPLX(0.D00,-1.D00)
       PI=4.D00*DATAN(1.D00)
+
       TWOPI=2.D00*PI
       FOURPI=4.D00*PI
       READ(5,1) TXT
@@ -82,46 +83,55 @@ C      READ PRIMITIVE VECTORS BSX, BSY, BSZ OF REAL SPACE
       WRITE(6,12) TLAT(LAT), BOA, COA
       DO 30 I=1,3
    30 WRITE(6,11) BSX(I), BSY(I), BSZ(I)
+      WRITE(6,4)   
       DO 25 I=1,NQ
    25 WRITE(6,11) QX(I), QY(I), QZ(I)
       
 C      GENERATE THE NUMVR AND NUMVG SHORTEST VECTORS
 c      OF REAL AND RECIPROCAL SPACE
-      
-c      CALL VECGEN(NUMR, NUMG, NOVCGN, LAT)
-      SWS = (3.D00*VOL/FOURPI)**(1.D00/3.D00)
+
+
+      CALL VECGEN(NUMR, NUMG, NOVCGN, LAT)
+     
+      PRINT *, 'MADE IT PAST VECGEN'                                                                                                   
+      SWS = (3.D00*VOL/FOURPI/NQ)**(1.D00/3.D00)
       SWSL = SWS*ALAMDA
-      FPL30M = FOURPI*ALAMDA**3.D00/VOL
+      FPL3OM = FOURPI*ALAMDA**3.D00/VOL
       FPLAM = FOURPI*ALAMDA
       WRITE(6,10) VOL, SWS, SOO
       READ(5,7) MODE, NPX, NPY, NPZ
       IF (MODE.EQ.1) GO TO 28
 C     GENERATE MESH IN K-SPACE
-c      CALL MESH(LAT, NPX, NPY, NPZ, NPT)
-
+      PRINT *, "MADE IT BEFIRE MESH"
+      CALL MESH(LAT, NPX, NPY, NPZ, NPT)
+      PRINT *, "MADE IT AFTER MESH"    
       WRITE(6,16) MODE, NPX, NPY, NPZ, NPT
       WRITE(9) TXT, NL, NQ, NLM, LMQ, SWS
       WRITE(19) NPX, NPY, NPZ, LAT, NPT, BOA, COA, DUM1
+      PRINT *, "MADE IT TO NPT:",NP
       
       DO 23 NP=1,NPT
+      PRINT *, "MADE IT TO LN 113"
       KKX=KX(NP)
       KKY=KY(NP)
       KKZ=KZ(NP)
-c      CALL KTRNSF(LAT, KKX, KKY, KKZ, PKX, PKY, PKZ)
+      PRINT *, "MADE IT BEFIRE KTRNSF"    
+      CALL KTRNSF(LAT, KKX, KKY, KKZ, PKX, PKY, PKZ)
       IF (NOWRT.GT.0) WRITE(6,9) NP, PKX, PKY, PKZ, W(NP), POINT
       W=W(NP)
       WRITE(9) NP, PKX, PKY, PKZ, W, POINT, KKX, KKY, KKZ
       PKXP=PKX*PI
       PKYP=PKY*PI
       PKZP=PKZ*PI
-      
-c      CALL SMTRX(PKXP, PKYP, PKZP)
-      
+      PRINT *, 'MADE IT PAST SMTRX'
+      CALL SMTRX(PKXP, PKYP, PKZP)
+      PRINT *, 'MADE IT PAST SMTRX'
       J1=-IDIM
       DO 24 J=J1, LMQ
       J1=J1+IDIM
       I=J1+JDIM
       I2=J1+LMQ
+
       WRITE(9) (SRL(LIN), LIN=I1, I2)
    24 WRITE(9) (SIL(LIN), LIN=I1, I2)
    23 CONTINUE
@@ -155,8 +165,8 @@ c sigh this does not work     CLOSE (9,DISP=CRUNCH) tyrying below?
       PKYP = OKY*FY
       PKZP = OKZ*FZ
    29 CONTINUE
-      
-c      CALL SMTRX(PKXP, PKYP, PKZP)
+      PRINT *, 'MADE IT to smtrx2'
+      CALL SMTRX(PKXP, PKYP, PKZP)
       
       J1 = -IDIM
       DO 26 J=J1, LMQ
@@ -194,8 +204,8 @@ C **********************************************************************
       IMPLICIT REAL*8 (A-H, O-Z)
       COMPLEX*16 CIM, CCIM
       COMMON /B1/CIM, CCIM, CC(16, 16), FAC(13), DAC(13), NGLN(10),
-     1ALAMDA,TWOPI,FPL30M,SWS,VOL,SOO, SWSL, FPLAM, RMAX, GMAX, ICNVRG,
-     2NUMVR, NUMVG, NQ, NR0,NL2, NL2P, KLM0, NL, NLM, LMQ, NOWRT, IDIM
+     1ALAMDA,TWOPI,FPL3OM,SWS,VOL,SOO, SWSL, FPLAM, RMAX, GMAX, ICNVRG,
+     2NUMVR, NUMVG, NQ, NRO,NL2, NL2P, KLMO, NL, NLM, LMQ, NOWRT, IDIM
       COMMON /MSH/DKX,DKY,DKZ,DHX,BOA,COA,KX(2000),KY(2000),KZ(2000),
      1W(2000)
       COMMON/VEC/BSX(3),BSY(3),BSZ(3),BKX(3),BKY(3),BKZ(3),QX(6),QY(6),
@@ -204,13 +214,13 @@ C **********************************************************************
      3USX(500),USY(500),USZ(500),UKX(300),UKY(300),UKZ(300)
       DIMENSION CSX(500),CSY(500),CSZ(500),D(500),DD(3),DK(3)
       INTEGER NSR(50),NSG(50)
-
+      integer NR    
     1 FORMAT(1H,//, 15X,'SHELL NUMBER',I5,' WITH',I5,' POINTS',//)
     2 FORMAT(1H 10X,I5,4F10.6)
     3 FORMAT(1H ,10X,'(',F10.5,',',F10.5,',',F10.5,')',/)
     4 FORMAT(1H1 ,14X,'RESULT FROM VECGEN FOR REAL SPACE VECTORS',//,
      114X,'NO',5X,'SX',8X,'SY',8X,'SZ',8X,'D',/)
-    5 FORMAT(1H ,10X,'RESULT FROM VECGEN FOR RECIPROCAL SPACE VECTORS',
+    5 FORMAT(1H1 ,10X,'RESULT FROM VECGEN FOR RECIPROCAL SPACE VECTORS',
      1 //,'NO',5X,'KX',8X,'KY',8X,'KZ',8X,'D',/)
     6 FORMAT(1H,//,11X,'PRIMITIVE VECTORS OF RECIPROCAL SPACE',/)
     7 FORMAT(1H,//,11X,'R1',F10.4,'RA',F10.4,/,11X,'G1',F10.4,
@@ -230,16 +240,16 @@ C      PRIMITIVE VECTORS (BKX, BKY, BKZ) OF RECIPROCAL SPACE
       
       DO 20 I=1,3
       I1=1+MOD(I,3)
-      I2=1+MOD(I,3)
+      I2=1+MOD(I1,3)
       CALL CROSS(BSX(I1),BSY(I1),BSZ(I1),BSX(I2),BSY(I2),BSZ(I2),
      1BKX(I),BKY(I),BKZ(I))
-      VOL=DABS(BSX(1)*BKY(1)+BSY(1)*BKZ(1))
    20 CONTINUE
+      VOL=DABS(BSX(1)*BKX(1)+BSY(1)*BKY(1)+BSZ(1)*BKZ(1))
       
       DO 21 I=1,3
-      BKX(I)=BKX(I)*VOL*TWOPI
-      BKY(I)=BKY(I)*VOL*TWOPI
-      BKZ(I)=BKZ(I)*VOL*TWOPI
+      BKX(I)=BKX(I)/VOL*TWOPI
+      BKY(I)=BKY(I)/VOL*TWOPI
+      BKZ(I)=BKZ(I)/VOL*TWOPI
    21 WRITE(6,3) BKX(I),BKY(I),BKZ(I)
 
 C
@@ -273,7 +283,6 @@ C
       WRITE(6,7) R1, RA, G1, GA
 
 
-      
       DO 36 I=1,3
       DD(I)=DSQRT(BSX(I)**2+BSY(I)**2+BSZ(I)**2)
    36 DK(I)=DSQRT(BKX(I)**2+BKY(I)**2+BKZ(I)**2)
@@ -292,9 +301,7 @@ C
       WRITE(6,4)
       NR=0
       NRO=0
-      DO 22 L=1,NUMR
-   
-
+      DO 22 L=1,NUMR   
       A=L-NUMRH
       DO 22 M=1,NUMR
       B=M-NUMRH
@@ -307,7 +314,7 @@ C
       IF (DX.GT.RA) GO TO 22
       IF (DX.LE.RMAX) NRO=NRO+1
       NR=NR+1
-      IF (NR.GT.500) GO TO 33
+      IF (NR .GT. 500) GO TO 33
       D(NR)=DX
       CSX(NR)=SX
       CSY(NR)=SY
@@ -317,6 +324,7 @@ C
 C SORT VECTORS IN ORDER OF INCREASING D
 C
 
+   
       DA=1.D-06
       NSH=0
       NSHL=-1
@@ -349,7 +357,7 @@ C
       WRITE(6,1) NSH, NSHL
       NUMVR=NR
       NSHLR=NSH
- 
+
 c      
 C RECIPROCAL SPACE
 C
@@ -375,9 +383,10 @@ C
       CSZ(NG)=GZ
    27 CONTINUE
 C
+
 C SORT VECTORS IN ORDER OF INCREASING D
 C
-  
+
       DA=1.E-06
       NSH=0
       NSHL=-1
@@ -388,6 +397,8 @@ C
    30 AMIN=D(N)
       N1=N
    29 CONTINUE
+
+
       NSHL=NSHL+1
       AKX(K)=CSX(N1)
       AKY(K)=CSY(N1)
@@ -423,7 +434,6 @@ C
       WRITE(1)(AKZ(N),N=1,NG)
       RETURN
    32 continue
-
 c     READ VECTORS GENERATED IN AN EARLIER RUN
       READ(1) BKX,BKY,BKZ,VOL,RMAX,GMAX,NUMVR,NUMVG,NRO
       READ(1)(ASX(N),N=1,NUMVR)
@@ -1251,6 +1261,7 @@ C
       NPXM=NPX-1
       NPYM=NPY-1
       NPZM=NPZ-1
+      PRINT *, 'TEST LAT:',LAT
       GO TO (20,21,22,23,24,25,26,27), LAT
    20 NP=0
 C
@@ -1328,11 +1339,11 @@ C
    31 CONTINUE  
       NPT=NP
       RETURN
-   22 NP=0
+
+
       
+   22 NP=0
 C     BCC IRREDUCIBLE ZONE DEFINED BY
-
-
       IF(NPYM.NE.2*(NPYM/2)) GO TO 998
       DKX=2.D0/NPYM
       DKY=DKX
@@ -1340,16 +1351,12 @@ C     BCC IRREDUCIBLE ZONE DEFINED BY
       DHX=0.D0
       NPH=NPY/2+1
       NPYH=NPYM/2
-      DO 32 I=1,NPX
-      Y=I-1
-      M1=NPX-I+NPH
-      NQY=MIN0(J,M1)
-      DO 32 J=1,NQY
-      X=J-1
-C     check this
-      M5=M1-J+1
-      NPZ=MIN0(J,M5)
-      DO 32 K=1,NPZ
+      DO 32 I=1,NPY
+      X=I-1
+      JM=MIN0(I,NPY-I+1)
+      DO 32 J=1,JM
+      Y=J-1
+      DO 32 K=1,J
       Z=K-1
       NP=NP+1
       IF(NP.GT.NDIM) GO TO 999
@@ -1361,9 +1368,12 @@ C     check this
       IF(X.EQ.Y.AND.Y.EQ.Z) W=W/3.D0
       IF(Z.EQ.0) W=W/2.D0
       IF(X.EQ.0) W=W/2.D0
+      IF (X+Y.EQ.NPYM) W=W/2.D0
       IF(Y.EQ.NPYM) W=W/2.D0
-      IF(X+Y+Z.EQ.NPTH) W=W/2.D0                                                                                                      
-      IF(X+Y+Z.EQ.O) W=1.D0
+      IF(Y .EQ.Z.AND.X+Y .EQ.NPYM) W=8.D0
+      IF(Z.EQ.NPYH) W=2.D0
+      IF(X.EQ.NPYH) W=2.D0 
+      IF(X+Y+Z.EQ.0) W=1.D0
       WW(NP)=W
    32 CONTINUE  
       NPT=NP
