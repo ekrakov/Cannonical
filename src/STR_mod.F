@@ -1,4 +1,5 @@
-c      program NPmain	AANP
+
+c     program NPmain	AANP
       implicit real*8 (A-H,O-Z)
       complex*16 cim, ccim, sphrm, cmplx	
       common/b1/cim,ccim,c(16,16),fac(13),dac(13),ngln(10),
@@ -123,7 +124,7 @@ C     GENERATE MESH IN K-SPACE
       PKXP=PKX*PI
       PKYP=PKY*PI
       PKZP=PKZ*PI
-      PRINT *, 'MADE IT PAST SMTRX'
+      PRINT *, 'MADE IT to second SMTRX'
       CALL SMTRX(PKXP, PKYP, PKZP)
       PRINT *, 'MADE IT PAST SMTRX'
       J1=-IDIM
@@ -463,8 +464,8 @@ C **********************************************************************
      1SRC
       REAL*8 DREAL, DIMAG
       COMMON /B1/ CIM, CCIM, C(256), FAC(13), DAC(13), NGLN(10),
-     1ALAMDA, TWOPI, FPL30M, SWS,VOL,SOO,SWSL,FPLAM RMAX,GMAX,ICNVRG,
-     2NUMVR, NUMVG, NQ, NR0, NL2, NL2P, KLM0, NL, NLM, LMQ, NOWRT, IDIM
+     1ALAMDA, TWOPI, FPL3OM, SWS,VOL,SOO,SWSL,FPLAM RMAX,GMAX,ICNVRG,
+     2NUMVR, NUMVG, NQ, NRO, NL2, NL2P, KLMO, NL, NLM, LMQ, NOWRT, IDIM
       COMMON /B2/ SRKLP(2916), SIKLP(2916)
       COMMON /LDATA/LL(49), MM(49)
       COMMON /VEC/BSX(3),BSY(3),BSZ(3),BKX(3),BKY(3),BKZ(3),QX(6),QY(6),
@@ -472,7 +473,7 @@ C **********************************************************************
      2DR(500),DG(300),
      3USX(500),USY(500),USZ(500),UKX(300),UKY(300),UKZ(300)
       COMMON/YLMD/YLM(49)
-      DIMENSION GLNS(500,1),FBLN(500,7),BDOTQ(500),DRQ(500),
+      DIMENSION GLNS(500,7),FBLN(500,7),BDOTQ(500),DRQ(500),
      1SR(49), CXPRDK(500), SUMR(49), SUMG(49)
   100 FORMAT(1H ,9(1PE13.5))
   101 FORMAT(1H ,///)
@@ -485,47 +486,56 @@ C **********************************************************************
 
 C     QQ DIAGONAL BLOCKS
       
-
+      PRINT *,"MADE IT TO DIAG BLOCKS STR"
       PKX=PKXP
       PKY=PKYP
       PKZ=PKZP
       CXPRDK(1)=CMPLX(1.D00,0.D00)
+      PRINT *,"the val is NRO:",NRO 
       DO 22 I=2,NRO
       DRI=DR(I)
+       PRINT *,"the val is DRI:",DRI           
       USX(I)=ASX(I)/DRI
       USY(I)=ASY(I)/DRI
       USZ(I)=ASZ(I)/DRI
       PDR=PKX*ASX(I)+PKY*ASY(I)+PKZ*ASZ(I)
       CXPRDK(I)=CDEXP(PDR*CIM)
       ALFA=ALAMDA*DRI
+      PRINT *,"the val OF ALPHA:",ALPHA 
 C    CONVERGENCE FUNCTION, REAL SPACE
 
-      DO 25 LP=1, NL2P
+       PRINT *,"the val OF NL2P:",NL2P 
+      DO 25 LP=1, NL2P 
+C      DO 25 LP=1, 3            
+      PRINT *,"the val OF LP:",LP
       L=LP-1
       NG=NGLN(LP)
-   25 GLNS(I,LP)=GLN(ALFA,L,NG)
+  25  GLNS(I,LP)=GLN(ALFA,L,NG)
+      PRINT *,"the val OF NG:",NG
    22 CONTINUE
       DO 35 I=l,NUMVG
       X=AKX(I)+PKX
       Y=AKY(I)+PKY
       Z=AKZ(I)+PKZ
       D=DSQRT(X*X+Y*Y+Z*Z)
+      PRINT *,"the val OF D:",D 
       IF(D.GT.GMAX) GO TO 35
       BETA=D/ALAMDA
       UKX(I)=X/D
       UKY(I)=Y/D
       UKZ(I)=Z/D
-
+      PRINT *,"MADE IT TO LN 518" 
 c     CONVERGENCE FUNCTION, RECIP. SPACE
 
       DO 33 LP=1,NL2P
       L=LP-1
+       PRINT *,"MADE IT TO 523"    
       NG=NGLN(LP)
-   33 FBLN(I,LP)=BETA*(L-2)/(1.D00+BETA*BETA)**(NG+1)
+   33 FBLN(I,LP)=BETA**(L-2)/(1.D00+BETA*BETA)**(NG+1)
    35 DG(I)=D
 
 c     EVALUATION OF LATTICE SUMS FOR QPP .EQ. 0
-
+      PRINT *,"MADE IT TO 528" 
       DO 44 KLM=1,KLMO
       SUMR(KLM)=CMPLX(0.D00,0.D00)
    44 SUMG(KLM)=CMPLX(0.D00,0.D00)
@@ -534,13 +544,22 @@ c     real space
 
       DO 49 I=2,NRO
       CALL YLMRK(USX(I),USY(I),USZ(I),NL2)
+      PRINT *,"MADE IT TO 546"
       KLM=0
       DO 26 LP=1,NL2P
+       PRINT *,"MADE IT TO 549"   
       L=LP-1
       NM=L*2+1
       DO 26 M=1,NM
+C     PRINT *,"MADE IT TO 553 NL2",NL2
+
       KLM=KLM+1
+C      PRINT *,"MADE IT TO 553 KLM",KLM      
    26 SUMR(KLM)=SUMR(KLM)+GLNS(I,LP)*YLM(KLM)*CXPRDK(I)   
+C 26   YLM(1)=YLM(1)
+C    26 KLM=1  
+      PRINT *,"MADE IT TO 558 KLM",KLM
+
       IF(NL2.LE.5) GO TO 49
       
 c     IF L IS LARGER THAN 4, REAL SPACE SUMMATIONS ONLY
@@ -550,7 +569,8 @@ c     IF L IS LARGER THAN 4, REAL SPACE SUMMATIONS ONLY
       SORO=(SWS/DR(I))**LP
       DO 50 M=1,NM
       KLM=KLM+1
-   50 SUMR(KLM)=SUMR(KLM)+SORO*YLM(KLM)*CXPRDK(I)
+ 50   SUMR(KLM)=SUMR(KLM)+SORO*YLM(KLM)*CXPRDK(I)
+      PRINT *,"MADE IT TO 568 NL2",NL2      
    49 CONTINUE
 
 c     recip space
@@ -558,8 +578,10 @@ c     recip space
 
 
       DO 34 I=1,NUMVG
+C      PRINT *,"MADE IT TO 553 NUMVG",NUMVG      
       IF(DG(I).GT.GMAX) GO TO 34
       CALL YLMRK(UKX(I),UKY(I),UKZ(I),NL2P)
+       PRINT *,"MADE IT TO 572"   
       KLM=0
       DO 28 LP=1,NL2P
       L=LP-1
@@ -574,6 +596,7 @@ C     SET UP STRUCTURE CONSTANT MATRIX FROM LATTICE SUMS
       CIL=CIM
       KLM=0
       DO 51 LP=1,NL2
+       PRINT *,"MADE IT TO 588"   
       L=LP-1
       NM=L*2+1
       CIL=CIL*CCIM
@@ -589,7 +612,7 @@ C     SET UP STRUCTURE CONSTANT MATRIX FROM LATTICE SUMS
    53 SR(KLM)=SUMR(KLM)*CIL
    51 CONTINUE  
       SR(1)=SR(1)-SOO*SWSL
-
+       PRINT *,"MADE IT TO 604"   
 C     INSERT INTO LOWER TRIANGLE
 
       J1=-IDIM
@@ -615,12 +638,13 @@ c     PRINT INDIVIDUAL CONTRIBUTIONS TO THE LATTICE SUMS. USED
 c     FOR TEST OF THE CHOICE OF SPLITTING PARAMETERS <LAMDA)
 c     AND <NGLN>
 
+      PRINT *,"PRINT HERE"
       WRITE(6, 105)
       KLM=0
       DO 59 LP=1, NL2P
       NM=LP*2-1
       AR=SWSL*LP
-      AG=FPL30M*AR/DAC(LP)
+      AG=FPL3OM*AR/DAC(LP)
       DO 59 M=1, NM
       KLM=KLM+1
       SUMR(KLM)=SUMR(KLM)*AR
@@ -631,6 +655,7 @@ c     AND <NGLN>
    58 IF (NOWRT.EQ.0) GO TO 30
 
 
+      
 C PRINT STRUCTURE CONSTANT MATRIX
 
       WRITE(6, 102)
@@ -705,7 +730,7 @@ C
       DO 37 LP=1,NL2P
       L=LP-1
       NG=NGLN(LP)
-  37  GLNS(I,LP)=GLN(ALFA,L,NG)
+ 37   GLNS(I,LP)=GLN(ALFA,L,NG)
   36  CONTINUE
       DO 38 I=1,NUMVG
       IF (D.GT.GMAX) GO TO 38
@@ -756,6 +781,7 @@ C
 C     RECIP. SPACE
 C
       DO 41 I=1,NUMVG
+      PRINT *,"MADE IT TO 776 NUMVG", NUMVG      
       IF(DG(I).GT.GMAX) GO TO 41
       CALL YLMRK(UKX(I),UKY(I),UKZ(I),NL2P)
       KLM=0
@@ -832,8 +858,8 @@ C
    60 IF(NOWRT.EQ.0) GO TO 20
 C
 C     PRINT STRUCTURE CONSTANT MATRIX
-C PG 143
-
+C     PG 143
+      PRINT *,"MADE IT TO 848"   
       WRITE(6,104) IQ,JQ
       DO 31 ILM=1,NLM
       J1=IQQ+ILM
@@ -871,7 +897,7 @@ C     *****************************************************************
       COMPLEX*16 CIM,CCIM
       COMMON /B1/CIM,CCIM,C(16,16),FAC(13),DAC(13),NGLN(10),
      1LAMDA,WTOF,FTLM,PL3OM,SVS,VOL,SOO,SWSL,FTPLAM,RMAX,GMAX,ICNVG,
-     2NUMVR,NUMVG,NQ,NRO,NL2,NL2P,KLM0,NL,NLM,LQM0,NOWRT,IDIM
+     2NUMVR,NUMVG,NQ,NRO,NL2,NL2P,KLMO,NL,NLM,LQMO,NOWRT,IDIM
 C
       ALFASF=ALFA*ALFA/4.D00
       EXA=DEXP(-ALFA)
@@ -879,6 +905,7 @@ C
       HO1=0.5D00*EXA
       H1=HOO
       H2=HO1
+      PRINT *, 'H2:',H2
 C
 C     FOR L = 0
 C
@@ -904,16 +931,16 @@ C
       GLN=GLN+H3
       H1=H2
    21 H2=H3
-      IF(LN.EQ.0) RETURN
+      IF(LN.EQ.1) RETURN
 C
 C     FOR L .GT. 1
 C
       L=1
    23 L=L+1
-      LP=L-1
+      LP=L+1
       LM=L-1
-      H21=H10+(2*LM-1)*H11/ALFA
-      H20=H10+(2*LM+1)*H10/ALFA
+      H21=H1O+(2*LM-1)*H11/ALFA
+      H2O=H1O+(2*LM+1)*H1O/ALFA
       H1=H20
       H2=H21
       GLN=H1+H2
@@ -926,10 +953,12 @@ C
       H1=H2
   22  H2=H3
       GLN=GLN/DAC(LP)
-      IF(L.GE.LN) RETURN
-      H00=H10
-      H01=H20
-      H10=H11
+      IF(L.EQ.LN) RETURN
+      PRINT *,"the val OF LN:",LN
+      PRINT *,"the val OF L:",L     
+      HOO=H1O
+      H1O=H2O
+      HO1=H11
       H11=H21
       GO TO 23
       END
