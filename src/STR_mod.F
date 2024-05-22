@@ -697,18 +697,19 @@ C     PG 141
   29  CXPRDK(I)=CDEXP(CIM*PRD)
       
 c      QQP OFF DIAGONAL BLOCKS (PG 141)
-
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC CHECK THIS CHECK THIS 5/22/24
       NQM=NQ-1
-      JQ0=-NLM*IDIM
+      JQQ=-NLM*IDIM
       DO 20 JQ=1,NQM
-      JQ0=JQ0+NLM*IDIM
       JQP=JQ+1
-      JQ0Q=JQ0+NLM*IDIM
-      QPX=QX(JQ0)
-      QPY=QY(JQ0)
-      QPZ=QZ(JQ0)
+      JQQ=JQQ+NLM*IDIM
+      JQP=JQ+1
+      JQ0Q=JQO+NLM*IDIM
+      QPX=QX(JQO)
+      QPY=QY(JQO)
+      QPZ=QZ(JQO)
       DO 20 IQ=JQP,NQ
-      IQQ=(IQ-1)*NLM*JQ0
+      IQQ=(IQ-1)*NLM*JQO
       QPPX=QX(IQQ)-QPX
       QPPY=QY(IQQ)-QPY
       QPPZ=QZ(IQQ)-QPZ
@@ -727,6 +728,7 @@ c      QQP OFF DIAGONAL BLOCKS (PG 141)
 C
 C     CONVERGENCE FUNCTION, REAL SPACE
 C
+      PRINT *, 'MADE IT TO CONVERGENCE FUNCTION IN REAL SPACE'
       DO 37 LP=1,NL2P
       L=LP-1
       NG=NGLN(LP)
@@ -896,8 +898,8 @@ C     *****************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
       COMPLEX*16 CIM,CCIM
       COMMON /B1/CIM,CCIM,C(16,16),FAC(13),DAC(13),NGLN(10),
-     1LAMDA,WTOF,FTLM,PL3OM,SVS,VOL,SOO,SWSL,FTPLAM,RMAX,GMAX,ICNVG,
-     2NUMVR,NUMVG,NQ,NRO,NL2,NL2P,KLMO,NL,NLM,LQMO,NOWRT,IDIM
+     1ALAMDA,TWOPI,FPL3OM,SWS,VOL,SOO,SWSL,FPILAM,RMAX,GMAX,ICNVRG,
+     2NUMVR,NUMVG,NQ,NRO,NL2,NL2P,KLMO,NL,NLM,LMQ,NOWRT,IDIM
 C
       ALFASF=ALFA*ALFA/4.D00
       EXA=DEXP(-ALFA)
@@ -921,8 +923,8 @@ C
 C     FOR L = 1
 C
       H11=0.5D00*EXA
-      H10=(1.D00+ALFA)/ALFA/ALFA*EXA
-      H1=H10
+      H1O=(1.D00+ALFA)/ALFA/ALFA*EXA
+      H1=H1O
       H2=H11
       GLN=H1+H2
       DO 21 NP=2,NN
@@ -941,7 +943,7 @@ C
       LM=L-1
       H21=H1O+(2*LM-1)*H11/ALFA
       H2O=H1O+(2*LM+1)*H1O/ALFA
-      H1=H20
+      H1=H2O
       H2=H21
       GLN=H1+H2
       DO 22 NP=2,NN
@@ -1012,7 +1014,7 @@ C
       GON=H1+H2
       DO 11 NP=2,NN
       N=NP-1
-      H3=(ALFAS/N)*H1-(0.5-N)*H2/NP
+      H3=((ALFAS/N)*H1-(0.5-N)*H2)/NP                                                                                                                                                                     
       GON=GON+H3
       H1=H2
    11 H2=H3
@@ -1141,6 +1143,7 @@ c
       sinphi=yy/p
    35 cosmp(1)=1.d0
       sinmp(1)=0.d0
+      PRINT *, 'GOT TO LINE 1144 OF SPHERICAL HARMONICS'
       do 33 mp=2, nlp
       cosmp(mp)=cosmp(mp-1)*cosphi-sinmp(mp-1)*sinphi
    33 sinmp(mp)=sinmp(mp-1)*cosphi+cosmp(mp-1)*sinphi
@@ -1180,7 +1183,7 @@ c **********************************************************************
       implicit real*8(a-h,o-z)
       complex*16 cim,ccim
       common/b1/cim,ccim,cc(16,16),fac(13),dac(13),ngln(10),
-     1alamda,twopi,fpl30m,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
+     1alamda,twopi,fpl3Om,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
      2numvr, numvg,nq,nro,nl2,nl2p,klmo,nl,nlm,lmq,nowrt,idim 
       common/ldata/ll(49),mm(40)
       dimension cylm(28)
