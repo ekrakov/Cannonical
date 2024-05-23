@@ -1,4 +1,3 @@
-
 c     program NPmain	AANP
       implicit real*8 (A-H,O-Z)
       complex*16 cim, ccim, sphrm, cmplx	
@@ -705,14 +704,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC CHECK THIS CHECK THI
       JQQ=JQQ+NLM*IDIM
       JQP=JQ+1
       JQ0Q=JQO+NLM*IDIM
-      QPX=QX(JQO)
-      QPY=QY(JQO)
-      QPZ=QZ(JQO)
+      QPX=QX(JQ)
+      QPY=QY(JQ)
+      QPZ=QZ(JQ)
       DO 20 IQ=JQP,NQ
-      IQQ=(IQ-1)*NLM*JQO
-      QPPX=QX(IQQ)-QPX
-      QPPY=QY(IQQ)-QPY
-      QPPZ=QZ(IQQ)-QPZ
+      IQQ=(IQ-1)*NLM*JQQ
+      QPPX=QX(IQ)-QPX
+      QPPY=QY(IQ)-QPY
+      QPPZ=QZ(IQ)-QPZ
       DO 36 I=1,NUMVR
       X=ASX(I)-QPPX
       Y=ASY(I)-QPPY
