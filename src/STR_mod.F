@@ -1,8 +1,8 @@
 c     program NPmain	AANP
       implicit real*8 (A-H,O-Z)
-      complex*16 cim, ccim, sphrm, cmplx	
+      complex*16 cim, ccim, sphrm,dcmplx	
       common/b1/cim,ccim,c(16,16),fac(13),dac(13),ngln(10),
-     1alamda,twopi,fpl30m,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
+     1alamda,twopi,fpl3om,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
      2numvr,numvg,nq,nro,nl2,nl2p,klmo,nl,nlm,lmq,nowrt,idim
       common/b2/srl(2916),sil(2916)
       COMMON/MSH/DKX,DKY,DKZ,DHX,BOA,COA,KX(2500),KY(2500),KZ(2500),
@@ -46,8 +46,8 @@ C      data point/'    '/,idum1/0/,dum1/0.d0/
    15 FORMAT(I5,2E15.8)
    16 FORMAT(1H ,//,11X,'MODE,NPX,NPY,NPZ,NPT',5I5)
       IDIM=54
-      CIM=CMPLX(0.D00,1.D00)
-      CCIM=CMPLX(0.D00,-1.D00)
+      CIM=DCMPLX(0.D00,1.D00)
+      CCIM=DCMPLX(0.D00,-1.D00)
       PI=4.D00*DATAN(1.D00)
 
       TWOPI=2.D00*PI
@@ -56,8 +56,10 @@ C      data point/'    '/,idum1/0/,dum1/0.d0/
       TXT(15) = ' NEW'
       READ(5,13) RMAX, GMAX, NOVCGN, NOWRT, ICNVRG
       READ(5,3) NL, NQ, NGLN, ALAMDA
+      print*,'NL:',NL
+      PRINT *,'NQ:',NQ
       READ(5,15) LAT, BOA, COA
-      NLM=NL*NQ
+      NLM=NL*NL
       LMQ=NLM*NQ
       NL2=2*NL-1
      
@@ -93,39 +95,35 @@ c      OF REAL AND RECIPROCAL SPACE
 
       CALL VECGEN(NUMR, NUMG, NOVCGN, LAT)
      
-      PRINT *, 'MADE IT PAST VECGEN'                                                                                                   
+
       SWS = (3.D00*VOL/FOURPI/NQ)**(1.D00/3.D00)
       SWSL = SWS*ALAMDA
       FPL3OM = FOURPI*ALAMDA**3.D00/VOL
-      FPLAM = FOURPI*ALAMDA
+      FPILAM = FOURPI*ALAMDA
       WRITE(6,10) VOL, SWS, SOO
       READ(5,7) MODE, NPX, NPY, NPZ
       IF (MODE.EQ.1) GO TO 28
 C     GENERATE MESH IN K-SPACE
-      PRINT *, "MADE IT BEFIRE MESH"
+
       CALL MESH(LAT, NPX, NPY, NPZ, NPT)
-      PRINT *, "MADE IT AFTER MESH"    
       WRITE(6,16) MODE, NPX, NPY, NPZ, NPT
       WRITE(9) TXT, NL, NQ, NLM, LMQ, SWS
       WRITE(19) NPX, NPY, NPZ, LAT, NPT, BOA, COA, DUM1
-      PRINT *, "MADE IT TO NPT:",NP
-      
+
       DO 23 NP=1,NPT
-      PRINT *, "MADE IT TO LN 113"
       KKX=KX(NP)
       KKY=KY(NP)
       KKZ=KZ(NP)
-      PRINT *, "MADE IT BEFIRE KTRNSF"    
       CALL KTRNSF(LAT, KKX, KKY, KKZ, PKX, PKY, PKZ)
+CCCCCCCCCCCCCCCCCCCCCCCCTHIS IS TRUE GT =1 IN THIS PROGRAM CCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCCCCCCCCC GT =0 MEANS       
       IF (NOWRT.GT.0) WRITE(6,9) NP, PKX, PKY, PKZ, W(NP), POINT
-      W=W(NP)
-      WRITE(9) NP, PKX, PKY, PKZ, W, POINT, KKX, KKY, KKZ
+      WW=W(NP)
+      WRITE(9) NP, PKX, PKY, PKZ, WW, POINT, KKX, KKY, KKZ
       PKXP=PKX*PI
       PKYP=PKY*PI
       PKZP=PKZ*PI
-      PRINT *, 'MADE IT to second SMTRX'
       CALL SMTRX(PKXP, PKYP, PKZP)
-      PRINT *, 'MADE IT PAST SMTRX'
       J1=-IDIM
       DO 24 J=J1, LMQ
       J1=J1+IDIM
@@ -148,30 +146,29 @@ c sigh this does not work     CLOSE (9,DISP=CRUNCH) tyrying below?
       KKX = 0
       KKZ = 0
       FX = PI
-      FY = PI / BOA
-      FZ = PI / COA
+      FY = PI/BOA
+      FZ = PI/COA
       FHX = 0.D0
       IF (LAT .NE. 4) GO TO 27
-      FX = 2.D0 / 3.D0 * PI
-      FY = PI / DSQRT(3.D0)
-      FHX = -0.5D0 * FX
+      FX = 2.D0/3.D0 * PI
+      FY = PI/DSQRT(3.D0)
+      FHX = -0.5D0*FX
 
             
    27 DO 29 I=1,NPOINT
       READ(5,8) OKX, OKY, OKZ, POINT
-      WRITE(6,9) I, OKX, OKY, OKZ, W, POINT
-      WRITE(9) OKX, OKY, OKZ, W, POINT, KKX, KKY, KKZ
-      PKXP = OKX*FX*FHX*OKY
+      WRITE(6,9) I, OKX, OKY, OKZ, WW, POINT
+      WRITE(9) I OKX, OKY, OKZ, W, POINT, KKX, KKY, KKZ
+      PKXP = OKX*FX+FHX*OKY
       PKYP = OKY*FY
       PKZP = OKZ*FZ
    29 CONTINUE
-      PRINT *, 'MADE IT to smtrx2'
       CALL SMTRX(PKXP, PKYP, PKZP)
       
       J1 = -IDIM
       DO 26 J=J1, LMQ
       J1 = J1 + IDIM
-      I = J1 + JDIM
+      I1=J1+J
       I2 = J1 + LMQ
       WRITE(9) (SRL(LIN), LIN=I1, I2)
       WRITE(9) (SIL(LIN), LIN=I1, I2)
@@ -186,7 +183,7 @@ C*                                                                     *
 C*    INSERT LM-DATA                                                   *
 C*                                                                     *
 C **********************************************************************
-      COMMON /LDATA/ LL(49), MM(49)
+      COMMON/LDATA/LL(49),MM(49)
       DATA LL/0,3*1,5*2,7*3,9*4,11*5,13*6/
       DATA MM/0,-1,0,1,-2,-1,0,1,2,-3,-2,-1,0,1,2,3,-4,-3,-2,-1,0,1,2,3,
      14,-5,-4,-3,-2,-1,0,1,2,3,4,5,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6/
@@ -204,7 +201,7 @@ C **********************************************************************
       IMPLICIT REAL*8 (A-H, O-Z)
       COMPLEX*16 CIM, CCIM
       COMMON /B1/CIM, CCIM, CC(16, 16), FAC(13), DAC(13), NGLN(10),
-     1ALAMDA,TWOPI,FPL3OM,SWS,VOL,SOO, SWSL, FPLAM, RMAX, GMAX, ICNVRG,
+     1ALAMDA,TWOPI,FPL3OM,SWS,VOL,SOO, SWSL, FPILAM, RMAX, GMAX, ICNVRG,
      2NUMVR, NUMVG, NQ, NRO,NL2, NL2P, KLMO, NL, NLM, LMQ, NOWRT, IDIM
       COMMON /MSH/DKX,DKY,DKZ,DHX,BOA,COA,KX(2000),KY(2000),KZ(2000),
      1W(2000)
@@ -459,12 +456,19 @@ C CALCULATION OF THE STRUCTURE CONSTANT MATRIX
 C
 C **********************************************************************
       IMPLICIT REAL*8 (A-H, O-Z)
-      COMPLEX*16 SUMR, SUMG, SR, CIM, CCIM,CIL,CMPLX,YLM,CDEXP,CXPRDK,
+      COMPLEX*16 SUMR, SUMG, SR, CIM, CCIM,CIL,DCMPLX,YLM,CDEXP,CXPRDK,
      1SRC
       REAL*8 DREAL, DIMAG
-      COMMON /B1/ CIM, CCIM, C(256), FAC(13), DAC(13), NGLN(10),
-     1ALAMDA, TWOPI, FPL3OM, SWS,VOL,SOO,SWSL,FPLAM RMAX,GMAX,ICNVRG,
-     2NUMVR, NUMVG, NQ, NRO, NL2, NL2P, KLMO, NL, NLM, LMQ, NOWRT, IDIM
+
+      COMMON /B1/CIM, CCIM, C(256), FAC(13), DAC(13), NGLN(10),
+     1ALAMDA,TWOPI,FPL3OM,SWS,VOL,SOO, SWSL, FPILAM, RMAX, GMAX, ICNVRG,
+     2NUMVR, NUMVG, NQ, NRO,NL2, NL2P, KLMO, NL, NLM, LMQ, NOWRT, IDIM
+
+
+      
+C      Common /B1/ CIM, CCIM, C(256), FAC(13), DAC(13), NGLN(10),
+C     1ALAMDA, TWOPI, FPL3OM, SWS,VOL,SOO,SWSL,FPILAM RMAX,GMAX,ICNVRG,
+C     2NUMVR, NUMVG, NQ, NRO, NL2, NL2P, KLMO, NL, NLM, LMQ, NOWRT, IDIM
       COMMON /B2/ SRKLP(2916), SIKLP(2916)
       COMMON /LDATA/LL(49), MM(49)
       COMMON /VEC/BSX(3),BSY(3),BSZ(3),BKX(3),BKY(3),BKZ(3),QX(6),QY(6),
@@ -485,80 +489,82 @@ C **********************************************************************
 
 C     QQ DIAGONAL BLOCKS
       
-      PRINT *,"MADE IT TO DIAG BLOCKS STR"
+
       PKX=PKXP
       PKY=PKYP
       PKZ=PKZP
-      CXPRDK(1)=CMPLX(1.D00,0.D00)
-      PRINT *,"the val is NRO:",NRO 
+      CXPRDK(1)=DCMPLX(1.D00,0.D00)
+
       DO 22 I=2,NRO
       DRI=DR(I)
-       PRINT *,"the val is DRI:",DRI           
+
       USX(I)=ASX(I)/DRI
       USY(I)=ASY(I)/DRI
       USZ(I)=ASZ(I)/DRI
       PDR=PKX*ASX(I)+PKY*ASY(I)+PKZ*ASZ(I)
       CXPRDK(I)=CDEXP(PDR*CIM)
       ALFA=ALAMDA*DRI
-      PRINT *,"the val OF ALPHA:",ALPHA 
+
 C    CONVERGENCE FUNCTION, REAL SPACE
 
-       PRINT *,"the val OF NL2P:",NL2P 
+
       DO 25 LP=1, NL2P 
 C      DO 25 LP=1, 3            
-      PRINT *,"the val OF LP:",LP
+
       L=LP-1
       NG=NGLN(LP)
    25 GLNS(I,LP)=GLN(ALFA,L,NG)
-      PRINT *,"the val OF NG:",NG
+
    22 CONTINUE
       DO 35 I=l,NUMVG
       X=AKX(I)+PKX
       Y=AKY(I)+PKY
       Z=AKZ(I)+PKZ
       D=DSQRT(X*X+Y*Y+Z*Z)
-      PRINT *,"the val OF D:",D 
+
       IF(D.GT.GMAX) GO TO 35
       BETA=D/ALAMDA
       UKX(I)=X/D
       UKY(I)=Y/D
       UKZ(I)=Z/D
-      PRINT *,"MADE IT TO LN 518" 
+
 c     CONVERGENCE FUNCTION, RECIP. SPACE
 
       DO 33 LP=1,NL2P
       L=LP-1
-       PRINT *,"MADE IT TO 523"    
+
       NG=NGLN(LP)
    33 FBLN(I,LP)=BETA**(L-2)/(1.D00+BETA*BETA)**(NG+1)
    35 DG(I)=D
 
 c     EVALUATION OF LATTICE SUMS FOR QPP .EQ. 0
-      PRINT *,"MADE IT TO 528" 
+
       DO 44 KLM=1,KLMO
       SUMR(KLM)=CMPLX(0.D00,0.D00)
-      PRINT *, 'MADE IT TO SUMR'   
    44 SUMG(KLM)=CMPLX(0.D00,0.D00)
 
 c     real space
 
       DO 49 I=2,NRO
       CALL YLMRK(USX(I),USY(I),USZ(I),NL2)
-      PRINT *,"MADE IT TO 546"
+      CALL YLMRK(PI/2,PI/2,PI/2,5)                                                        
+
+      PRINT *, 'USX(', I, ') = ', USX(I)
+      PRINT *, 'USY(', I, ') = ', USY(I)
+      PRINT *, 'USZ(', I, ') = ', USZ(I)
+      PRINT *, 'NL2 = ', NL2
+      PRINT *, 'YLM = ',YLM
       KLM=0
       DO 26 LP=1,NL2P
-       PRINT *,"MADE IT TO 549"   
       L=LP-1
       NM=L*2+1
       DO 26 M=1,NM
 C     PRINT *,"MADE IT TO 553 NL2",NL2
-
       KLM=KLM+1
-C      PRINT *,"MADE IT TO 553 KLM",KLM      
    26 SUMR(KLM)=SUMR(KLM)+GLNS(I,LP)*YLM(KLM)*CXPRDK(I)   
 C 26   YLM(1)=YLM(1)
 C    26 KLM=1  
-      PRINT *,"MADE IT TO 558 KLM",KLM
+
 
       IF(NL2.LE.5) GO TO 49
       
@@ -569,25 +575,20 @@ c     IF L IS LARGER THAN 4, REAL SPACE SUMMATIONS ONLY
       SORO=(SWS/DR(I))**LP
       DO 50 M=1,NM
       KLM=KLM+1
- 50   SUMR(KLM)=SUMR(KLM)+SORO*YLM(KLM)*CXPRDK(I)
-      PRINT *,"MADE IT TO 568 NL2",NL2      
+   50 SUMR(KLM)=SUMR(KLM)+SORO*YLM(KLM)*CXPRDK(I)
    49 CONTINUE
 
 c     recip space
-
-
-
+      
       DO 34 I=1,NUMVG
-C      PRINT *,"MADE IT TO 553 NUMVG",NUMVG      
       IF(DG(I).GT.GMAX) GO TO 34
       CALL YLMRK(UKX(I),UKY(I),UKZ(I),NL2P)
-       PRINT *,"MADE IT TO 572"   
       KLM=0
       DO 28 LP=1,NL2P
       L=LP-1
       NM=L*2+1
       DO 28 M=1,NP
-      KLM=KLM+2
+      KLM=KLM+1
    28 SUMG(KLM)=SUMG(KLM)+FBLN(I,LP)*YLM(KLM)
    34 CONTINUE 
 
@@ -596,12 +597,11 @@ C     SET UP STRUCTURE CONSTANT MATRIX FROM LATTICE SUMS
       CIL=CIM
       KLM=0
       DO 51 LP=1,NL2
-       PRINT *,"MADE IT TO 588"   
       L=LP-1
       NM=L*2+1
       CIL=CIL*CCIM
       IF(LP.GT.5) GO TO 52
-      AR=SWLS**LP
+      AR=SWSL**LP
       AG=FPL3OM*AR/DAC(LP)
       DO 45 M=1,NM
       KLM=KLM+1
@@ -612,7 +612,6 @@ C     SET UP STRUCTURE CONSTANT MATRIX FROM LATTICE SUMS
    53 SR(KLM)=SUMR(KLM)*CIL
    51 CONTINUE  
       SR(1)=SR(1)-SOO*SWSL
-       PRINT *,"MADE IT TO 604"   
 C     INSERT INTO LOWER TRIANGLE
 
       J1=-IDIM
@@ -633,46 +632,46 @@ C     INSERT INTO LOWER TRIANGLE
       SIKLP(LIN)=AIMAG(SRC)
    27 CONTINUE
 
+      IF(ICNVRG.EQ.0) GO TO 58
 
 c     PRINT INDIVIDUAL CONTRIBUTIONS TO THE LATTICE SUMS. USED
 c     FOR TEST OF THE CHOICE OF SPLITTING PARAMETERS <LAMDA)
 c     AND <NGLN>
-
-      PRINT *,"PRINT HERE"
-      WRITE(6, 105)
+      
+C      WRITE(6, 105)
       KLM=0
       DO 59 LP=1, NL2P
       NM=LP*2-1
-      AR=SWSL*LP
+      AR=SWSL**LP
       AG=FPL3OM*AR/DAC(LP)
       DO 59 M=1, NM
       KLM=KLM+1
       SUMR(KLM)=SUMR(KLM)*AR
       SUMG(KLM)=SUMG(KLM)*AG
-      PRINT *, 'MADE IT TO 652'
    59 CONTINUE
-      WRITE(6, 107) (SUMR(K), K=1, KLM)
-      WRITE(6, 106) (SUMG(K), K=1, KLM)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCC THESE SHOULD NOT BE COMMENTED CCCCCCCCCCCC      
+C      WRITE(6, 107)
+C      WRITE(6,103) (SUMR(K),K=1,KLM)
+C      WRITE(6, 106)
+C      WRITE(6, 103) (SUMG(K), K=1, KLM)
    58 IF (NOWRT.EQ.0) GO TO 30
 
 
       
 C PRINT STRUCTURE CONSTANT MATRIX
-
-      WRITE(6, 102)
+C     WRITE(6, 102)
       I1=-IDIM
       DO 42 ILM=1, NLM
       I1=I1+IDIM
       I2=I1+ILM
    42 WRITE(6, 100) (SRKLP(LIN), LIN=ILM, I2, IDIM)
-      WRITE(6, 101)
+C      WRITE(6, 101)
       I1=-IDIM
       DO 43 ILM=1, NLM
       I1=I1+IDIM
       I2=I1+ILM
-      PRINT *, 'MADE IT TO 673'
    43 WRITE(6, 100) (SIKLP(LIN), LIN=ILM, I2, IDIM)
-      WRITE(6, 101)
+C      WRITE(6, 101)
       
    30 CONTINUE
       IF(NQ.EQ.1) RETURN 
@@ -687,7 +686,7 @@ c
       J1=J1+IDIM
       DO 24 ILM=JLM, NLM
       LIN=J1+ILM
-      PRINT * ,'MADE IT TO 69O'
+
       LNIQ=JQQ+LIN
       SRKLP(LINQ)=SRKLP(LIN)
 C ERROR MUST HAVE POINTER VALRIABLE 
@@ -711,7 +710,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC CHECK THIS CHECK THI
       QPX=QX(JQ)
       QPY=QY(JQ)
       QPZ=QZ(JQ)
-      PRINT *, 'MADE IT TO 714'
+
       DO 20 IQ=JQP,NQ
       IQQ=(IQ-1)*NLM*JQQ
       QPPX=QX(IQ)-QPX
@@ -732,7 +731,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC CHECK THIS CHECK THI
 C
 C     CONVERGENCE FUNCTION, REAL SPACE
 C
-      PRINT *, 'MADE IT TO CONVERGENCE FUNCTION IN REAL SPACE'
+
       DO 37 LP=1,NL2P
       L=LP-1
       NG=NGLN(LP)
@@ -787,7 +786,6 @@ C
 C     RECIP. SPACE
 C
       DO 41 I=1,NUMVG
-      PRINT *,"MADE IT TO 776 NUMVG", NUMVG      
       IF(DG(I).GT.GMAX) GO TO 41
       CALL YLMRK(UKX(I),UKY(I),UKZ(I),NL2P)
       KLM=0
@@ -865,7 +863,7 @@ C
 C
 C     PRINT STRUCTURE CONSTANT MATRIX
 C     PG 143
-      PRINT *,"MADE IT TO 848"   
+
       WRITE(6,104) IQ,JQ
       DO 31 ILM=1,NLM
       J1=IQQ+ILM
@@ -911,7 +909,7 @@ C
       HO1=0.5D00*EXA
       H1=HOO
       H2=HO1
-      PRINT *, 'H2:',H2
+
 C
 C     FOR L = 0
 C
@@ -943,7 +941,7 @@ C     FOR L .GT. 1
 C
       L=1
    23 L=L+1
-      PRINT*,'MADE IT TO 946 L:', L
+
       LP=L+1
       LM=L-1
       H21=H1O+(2*LM-1)*H11/ALFA
@@ -959,12 +957,10 @@ C
       GLN=GLN+H3
       H1=H2
   22  H2=H3
-      PRINT *,'MADE IT RIGHT BEFORE DAC. IS THAT THE ERROR' 
+
       GLN=GLN/DAC(LP)
-      PRINT *,'MADE IT AFTER DAC'
+
       IF(L.EQ.LN) RETURN
-      PRINT *,"the val OF LN:",LN
-      PRINT *,"the val OF L:",L     
       HOO=H1O
       H1O=H2O
       HO1=H11
@@ -1037,7 +1033,7 @@ C
       END
       
 
-      subroutine ylmrk(xx,yy,zz,nlmax)
+      SUBROUTINE YLMRK(XX,YY,ZZ,NLMAX)
 c **********************************************************************
 c *                                                                    *
 c *     CALCULATES SPHERICAL HARMONICS                                 *
@@ -1046,10 +1042,10 @@ c *     CST IS CALCULATED IN <GAUNT>                                   *
 c *                                                                    *
 c **********************************************************************
       implicit real*8(a-h,o-z)
-      complex*16 ylm,cmplx,cim,ccim
+      complex*16 ylm,dcmplx,cim,ccim
 c the code had cc(16,16) but i dont think that is right
-      common/b1/cim,ccim,c(16,16),fac(13),dac(13),ngln(10),
-     1alamda,twopi,fpl30m,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
+      common/b1/cim,ccim,cc(16,16),fac(13),dac(13),ngln(10),
+     1alamda,twopi,fpl3om,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
      2numvr,numvg,nq,nro,nl2,nl2p,klmo,nl,nlm,lmq,nowrt,idim
       common/ylmd/ylm(49)
       common/ldata/ll(49),mm(49)
@@ -1069,7 +1065,7 @@ c
       do 11 lp=1,nlp
       l=lp-1
       la=l*(l+1)/2+1
-      ta=2.d0**l
+      ta=2.d0**l 
       do 11 mp=1,lp
       m=mp-1   
       k=l+m
@@ -1085,7 +1081,7 @@ c
       plm(j)=(((-1)**jc)*fac(ia))/(ta*fac(ib)*fac(ic))
    11 continue
       go to 32
-   10 if(xa.lt.0.000000d0) go to 20
+   10 if(xa.lt.0.999999d0) go to 20
 c       
 c     abs(x)=1
 
@@ -1103,7 +1099,7 @@ c     abs(x)=1
       la=l*(l+1)/2
       do 14 mp=2,lp
       j=la+mp
-   14 plm(k)=0.d0
+   14 plm(j)=0.d0
       go to 32
 c
 c     0<abs(x)<1
@@ -1136,7 +1132,7 @@ c
       k=j-1
       n=k-1
       a=(m-1)*2.d0*x/y
-      b=(l-m-1)*(l-m-2)
+      b=(l+m-1)*(l-m+2)
    23 plm(j) = a*plm(k) - b*plm(n)
    32 continue
 c
@@ -1150,7 +1146,7 @@ c
       sinphi=yy/p
    35 cosmp(1)=1.d0
       sinmp(1)=0.d0
-      PRINT *, 'GOT TO LINE 1144 OF SPHERICAL HARMONICS'
+
       do 33 mp=2, nlp
       cosmp(mp)=cosmp(mp-1)*cosphi-sinmp(mp-1)*sinphi
    33 sinmp(mp)=sinmp(mp-1)*cosphi+cosmp(mp-1)*sinphi
@@ -1165,18 +1161,15 @@ c
       mb=ma-1
       lb=l*(l+1)/2+ma
       if (m.le.0) go to 37
-      ylm(klm)=plm(lb)*cmplx(cosmp(ma), -sinmp(ma))
+      ylm(klm)=plm(lb)*dcmplx(cosmp(ma), -sinmp(ma))
+      PRINT *, 'KLM',KLM
+      PRINT *, 'YLM', YLM(KLM)
       go to 36
-   37 ylm(klm)=plm(lb)*cmplx(cosmp(ma),sinmp(ma))
+   37 ylm(klm)=plm(lb)*dcmplx(cosmp(ma),sinmp(ma))
    36 continue
       return
       end
 
-
-
-
-
-         
 
 
       subroutine gaunt
@@ -1202,7 +1195,7 @@ c
       la=l*(l+1)/2
       nm=l*2+1
       do 20 mp=1,lp
-      m=mp-2
+      m=mp-1
       l1=l-m+1
       l2=l+mp
       klm=la+mp
@@ -1234,7 +1227,7 @@ c
       set3=(2*lp+1)*(2*l+1)
       set4=(2*lpp+1)
       setf=set3*setn/set4/setd
-   21 cc(ilm,jlm)=((-1)**(m+1))*isign*cylm(klm)*dsqrt(setf)*20d0
+   21 cc(ilm,jlm)=((-1)**(m+1))*isign*cylm(klm)*dsqrt(setf)*2.0d0
       return
       end
 
@@ -1247,15 +1240,15 @@ C     *****************************************************************
      1W(2500)
 C
       GO TO (21,21,21,21,21,21,21,22), LAT
-   21 PKX=DKX*KKX*DHX*KKY
-      PKY=DKY*KXZ
+   21 PKX=DKX*KKX+DHX*KKY
+      PKY=DKY*KKY
       PKZ=DKZ*KKZ
       DK=PKX*PKX+PKY*PKY+PKZ*PKZ
-      IF (DX.LT.1.D-08) GO TO 20
+      IF (DK.LT.1.D-08) GO TO 20
       RETURN
-   22 QKX=DKX*KKY+DHX*KKY 
+   22 QKX=DKX*KKX+DHX*KKY 
       QKY=DKY*KKY 
-      QKZ=DXZ*KKZ-1.5D0/DSQRT(3.D0)
+      QKZ=DKZ*KKZ-1.5D0/DSQRT(3.D0)
       DK=QKX*QKX+QKY*QKY+QKZ*QKZ
       IF(DK.LT.1.D-08) GO TO 20
       SQ2=DSQRT(2.D0)
@@ -1300,7 +1293,7 @@ C
       NPXM=NPX-1
       NPYM=NPY-1
       NPZM=NPZ-1
-      PRINT *, 'TEST LAT:',LAT
+
       GO TO (20,21,22,23,24,25,26,27), LAT
    20 NP=0
 C
@@ -1383,6 +1376,7 @@ C
       
    22 NP=0
 C     BCC IRREDUCIBLE ZONE DEFINED BY
+      PRINT *,'DOING BCC CELL MESH'
       IF(NPYM.NE.2*(NPYM/2)) GO TO 998
       DKX=2.D0/NPYM
       DKY=DKX
@@ -1406,12 +1400,12 @@ C     BCC IRREDUCIBLE ZONE DEFINED BY
       IF(X.EQ.Y.OR.X.EQ.Z.OR.Y.EQ.Z) W=W/2.D0
       IF(X.EQ.Y.AND.Y.EQ.Z) W=W/3.D0
       IF(Z.EQ.0) W=W/2.D0
-      IF(X.EQ.0) W=W/2.D0
+      IF(Y.EQ.0) W=W/2.D0
       IF (X+Y.EQ.NPYM) W=W/2.D0
-      IF(Y.EQ.NPYM) W=W/2.D0
+c      IF(Y.EQ.NPYM) W=W/2.D0
       IF(Y .EQ.Z.AND.X+Y .EQ.NPYM) W=8.D0
       IF(Z.EQ.NPYH) W=2.D0
-      IF(X.EQ.NPYH) W=2.D0 
+      IF(X.EQ.NPYM) W=1.D0 
       IF(X+Y+Z.EQ.0) W=1.D0
       WW(NP)=W
    32 CONTINUE  

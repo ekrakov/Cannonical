@@ -123,6 +123,7 @@ C
       IF (DX.GT.RA) GO TO 22
       IF (DX.LE.RMAX) NRO=NRO+1
       NR=NR+1
+      PRINT * 'NRVAL NL:', NR
       IF (NR.GT.500) GO TO 33
       D(NR)=DX
       CSX(NR)=SX

@@ -15,7 +15,7 @@ C
       GON=H1+H2
       DO 11 NP=2,NN
       N=NP-1
-      H3=(ALFAS/N)*H1-(0.5-N)*H2/NP
+      H3=((ALFAS/N)*H1-(0.5-N)*H2)/NP
       GON=GON+H3
       H1=H2
    11 H2=H3
