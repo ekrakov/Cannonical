@@ -45,6 +45,11 @@ C      data point/'    '/,idum1/0/,dum1/0.d0/
    14 FORMAT(1H ,/,11X,'**MATRICES GENERATED AT AN EARLIER RUN**',//)
    15 FORMAT(I5,2E15.8)
    16 FORMAT(1H ,//,11X,'MODE,NPX,NPY,NPZ,NPT',5I5)
+c      OPEN(UNIT=9, FILE='output.txt', STATUS='NEW',form='unformatted')
+c      OPEN(UNIT=9,FILE='9.TXT',STATUS='NEW',FORM='UNFORMATTED',ACCESS=
+c     1'SEQUENTIAL')
+      
+
       IDIM=54
       CIM=DCMPLX(0.D00,1.D00)
       CCIM=DCMPLX(0.D00,-1.D00)
@@ -56,8 +61,8 @@ C      data point/'    '/,idum1/0/,dum1/0.d0/
       TXT(15) = ' NEW'
       READ(5,13) RMAX, GMAX, NOVCGN, NOWRT, ICNVRG
       READ(5,3) NL, NQ, NGLN, ALAMDA
-      print*,'NL:',NL
-      PRINT *,'NQ:',NQ
+c      print*,'NL:',NL
+c      PRINT *,'NQ:',NQ
       READ(5,15) LAT, BOA, COA
       NLM=NL*NL
       LMQ=NLM*NQ
@@ -129,7 +134,7 @@ CCCCCCCCCCCCCCCCCCCCCCCC GT =0 MEANS
       J1=J1+IDIM
       I=J1+JDIM
       I2=J1+LMQ
-
+c     PRINT *,'SRLSRL:', SRL(LIN)
       WRITE(9) (SRL(LIN), LIN=I1, I2)
    24 WRITE(9) (SIL(LIN), LIN=I1, I2)
    23 CONTINUE
@@ -170,6 +175,7 @@ c sigh this does not work     CLOSE (9,DISP=CRUNCH) tyrying below?
       J1 = J1 + IDIM
       I1=J1+J
       I2 = J1 + LMQ
+c      print*,'srl:',SRL(LIN)
       WRITE(9) (SRL(LIN), LIN=I1, I2)
       WRITE(9) (SIL(LIN), LIN=I1, I2)
    26 CONTINUE
@@ -211,7 +217,7 @@ C **********************************************************************
      3USX(500),USY(500),USZ(500),UKX(300),UKY(300),UKZ(300)
       DIMENSION CSX(500),CSY(500),CSZ(500),D(500),DD(3),DK(3)
       INTEGER NSR(50),NSG(50)
-      integer NR    
+c      integer NR    
     1 FORMAT(1H,//, 15X,'SHELL NUMBER',I5,' WITH',I5,' POINTS',//)
     2 FORMAT(1H 10X,I5,4F10.6)
     3 FORMAT(1H ,10X,'(',F10.5,',',F10.5,',',F10.5,')',/)
@@ -549,11 +555,11 @@ c     real space
       CALL YLMRK(USX(I),USY(I),USZ(I),NL2)
       CALL YLMRK(PI/2,PI/2,PI/2,5)                                                        
 
-      PRINT *, 'USX(', I, ') = ', USX(I)
-      PRINT *, 'USY(', I, ') = ', USY(I)
-      PRINT *, 'USZ(', I, ') = ', USZ(I)
-      PRINT *, 'NL2 = ', NL2
-      PRINT *, 'YLM = ',YLM
+c      PRINT *, 'USX(', I, ') = ', USX(I)
+c      PRINT *, 'USY(', I, ') = ', USY(I)
+c      PRINT *, 'USZ(', I, ') = ', USZ(I)
+c      PRINT *, 'NL2 = ', NL2
+c      PRINT *, 'YLM = ',YLM
       KLM=0
       DO 26 LP=1,NL2P
       L=LP-1
@@ -650,22 +656,22 @@ C      WRITE(6, 105)
       SUMG(KLM)=SUMG(KLM)*AG
    59 CONTINUE
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCC THESE SHOULD NOT BE COMMENTED CCCCCCCCCCCC      
-C      WRITE(6, 107)
-C      WRITE(6,103) (SUMR(K),K=1,KLM)
-C      WRITE(6, 106)
-C      WRITE(6, 103) (SUMG(K), K=1, KLM)
+      WRITE(6, 107)
+      WRITE(6,103) (SUMR(K),K=1,KLM)
+      WRITE(6, 106)
+      WRITE(6, 103) (SUMG(K), K=1, KLM)
    58 IF (NOWRT.EQ.0) GO TO 30
 
 
       
 C PRINT STRUCTURE CONSTANT MATRIX
-C     WRITE(6, 102)
+      WRITE(6, 102)
       I1=-IDIM
       DO 42 ILM=1, NLM
       I1=I1+IDIM
       I2=I1+ILM
    42 WRITE(6, 100) (SRKLP(LIN), LIN=ILM, I2, IDIM)
-C      WRITE(6, 101)
+      WRITE(6, 101)
       I1=-IDIM
       DO 43 ILM=1, NLM
       I1=I1+IDIM
@@ -985,7 +991,7 @@ c **********************************************************************
       implicit real*8 (a-h,o-z)
       complex*16 cim, ccim
       common/b1/cim,ccim,c(16,16),fac(13),dac(13),ngln(10),
-     1alamda,twopi,fpl30m,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
+     1alamda,twopi,fpl3Om,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
      2numvr,numvg,nq,nro,nl2,nl2p,klmo,nl,nlm,lmq,nowrt,idim
 c
       np=n+1
@@ -1162,8 +1168,8 @@ c
       lb=l*(l+1)/2+ma
       if (m.le.0) go to 37
       ylm(klm)=plm(lb)*dcmplx(cosmp(ma), -sinmp(ma))
-      PRINT *, 'KLM',KLM
-      PRINT *, 'YLM', YLM(KLM)
+c      PRINT *, 'KLM',KLM
+c      PRINT *, 'YLM', YLM(KLM)
       go to 36
    37 ylm(klm)=plm(lb)*dcmplx(cosmp(ma),sinmp(ma))
    36 continue
@@ -1185,7 +1191,7 @@ c **********************************************************************
       common/b1/cim,ccim,cc(16,16),fac(13),dac(13),ngln(10),
      1alamda,twopi,fpl3Om,sws,vol,soo,swsl,fpilam,rmax,gmax,icnvrg,
      2numvr, numvg,nq,nro,nl2,nl2p,klmo,nl,nlm,lmq,nowrt,idim 
-      common/ldata/ll(49),mm(40)
+      common/ldata/ll(49),mm(49)
       dimension cylm(28)
 c
 c     calculate constants for ylm
@@ -1222,11 +1228,21 @@ c
       lm1m=lp-mp+1
       lm2p=l+m+1
       lm2m=l-m+1
+      print *,'fac:',fac(lim)
+      print *,'faclim:',lim
       setn=fac(lpm)*fac(lim)
       setd=fac(lm1p)*fac(lm1m)*fac(lm2p)*fac(lm2m)
       set3=(2*lp+1)*(2*l+1)
       set4=(2*lpp+1)
-      setf=set3*setn/set4/setd
+      setf=(set3*setn)/(set4*setd)
+      print *,'setf:',dsqrt(setf)
+      print *, 'lp:',lp
+      print *, 'mp:',mp
+      print *,'l:',l
+      print *,'m:',m
+      print *,'lpp:',lpp
+      print *, 'mpp',mpp
+      
    21 cc(ilm,jlm)=((-1)**(m+1))*isign*cylm(klm)*dsqrt(setf)*2.0d0
       return
       end
